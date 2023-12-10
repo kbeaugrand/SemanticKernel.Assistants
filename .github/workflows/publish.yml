@@ -1,0 +1,33 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Create Release
+
+on:
+  release: 
+    types: [published]
+
+jobs:
+  Publish: 
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./src/Assistants/
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+      working-directory: ./src/Assistants/
+    - name: Pack
+      run: dotnet pack --configuration Release /p:Version=${{ github.event.release.tag_name }}
+      working-directory: ./src/Assistants/
+    - name: Push to NuGet
+      run: |
+        dotnet nuget push **/*.nupkg --source nuget.org --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      working-directory: ./src/Assistants/
+    

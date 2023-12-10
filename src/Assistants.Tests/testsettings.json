@@ -1,0 +1,5 @@
+{
+  "AzureOpenAIEndpoint": "",
+  "AzureOpenAIAPIKey": "",
+  "AzureOpenAIDeploymentName": "gpt-35-turbo-1106"
+}

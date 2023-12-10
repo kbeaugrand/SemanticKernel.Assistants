@@ -396,3 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/src/Assistants.Tests/testsettings.development.json
+/samples/01-mathematician/appsettings.development.json
