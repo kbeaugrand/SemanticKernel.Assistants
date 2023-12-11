@@ -17,7 +17,7 @@ internal class RoomThread : IRoomThread
 
     private readonly Dictionary<IAssistant, IThread> _assistantThreads = new();
 
-    public event EventHandler<string>? OnMessageReceived;
+    public event EventHandler<ChatMessageContent>? OnMessageReceived;
 
     internal RoomThread(IEnumerable<IAssistant> agents)
     {
@@ -61,7 +61,7 @@ internal class RoomThread : IRoomThread
                          var response = await assistantThread.Value.InvokeAsync($"{sender} > {message}")
                                                                     .ConfigureAwait(false);
 
-                         if (response.Equals("[silence]", StringComparison.OrdinalIgnoreCase))
+                         if (response.Content.Equals("[silence]", StringComparison.OrdinalIgnoreCase))
                          {
                              return;
                          }

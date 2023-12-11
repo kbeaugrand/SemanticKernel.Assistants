@@ -77,7 +77,7 @@ public class Thread : IThread
     /// Invoke the agent completion.
     /// </summary>
     /// <returns></returns>
-    public async Task<string> InvokeAsync(string userMessage)
+    public async Task<ChatMessageContent> InvokeAsync(string userMessage)
     {
         this._logger.LogInformation($"{this._callerName} > {userMessage}");
 
@@ -91,7 +91,7 @@ public class Thread : IThread
         this._chatHistory.Add(agentAnswer);
         this._logger.LogInformation(message: $"{this._agent.Name!} > {agentAnswer.Content}");
 
-        return agentAnswer.Content;
+        return agentAnswer;
     }
 
     /// <summary>

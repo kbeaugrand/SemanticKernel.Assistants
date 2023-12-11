@@ -15,7 +15,7 @@ public interface IThread
     /// Invokes the thread.
     /// </summary>
     /// <returns></returns>
-    Task<string> InvokeAsync(string userMessage);
+    Task<ChatMessageContent> InvokeAsync(string userMessage);
 
     /// <summary>
     /// Adds a system message.

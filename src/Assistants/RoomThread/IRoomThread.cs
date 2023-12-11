@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using System;
 using System.Threading.Tasks;
 
@@ -20,5 +21,5 @@ public interface IRoomThread
     /// <summary>
     /// Event produced when an agent sends a message.
     /// </summary>
-    event EventHandler<string>? OnMessageReceived;
+    event EventHandler<ChatMessageContent>? OnMessageReceived;
 }

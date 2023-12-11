@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
+using _01_mathematician.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.Assistants;
 
 var configuration = new ConfigurationBuilder()
@@ -34,15 +34,11 @@ var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.ya
        KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
     });
 
-var agent = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
-    azureOpenAIEndpoint,
-    azureOpenAIKey, 
-    assistants: mathematician);
-
-var thread = agent.CreateThread();
+var thread = mathematician.CreateThread();
 
 while (true)
 {
     Console.Write("User > ");
-    await thread.InvokeAsync(Console.ReadLine());
+    var result = await thread.InvokeAsync(Console.ReadLine());
+    Console.WriteLine($"Mathematician > {result.Content.Trim()}");
 }

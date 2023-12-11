@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.Assistants;
 using System.Threading.Tasks;
@@ -202,7 +203,7 @@ public class HarnessTests
 
         var thread = AssistantBuilder.CreateRoomThread(butler, mathematician);
 
-        thread.OnMessageReceived += (object? sender, string message) =>
+        thread.OnMessageReceived += (object? sender, ChatMessageContent message) =>
         {
             var agent = sender as IAssistant;
             this._output.WriteLine($"{agent.Name} > {message}");
