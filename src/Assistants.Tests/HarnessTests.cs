@@ -2,14 +2,12 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.Assistants;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.Experimental.Agents.Tests;
-
 
 public class HarnessTests
 {
@@ -121,7 +119,7 @@ public class HarnessTests
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
         string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
-        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+        var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
                 azureOpenAIEndpoint,
                 azureOpenAIKey,
                 new[] {
@@ -129,7 +127,7 @@ public class HarnessTests
                 },
                 loggerFactory: this._loggerFactory);
 
-        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
+        var butler = Assistant.FromTemplate("./Assistants/Butler.yaml",
                            azureOpenAIEndpoint,
                            azureOpenAIKey,
                            assistants: new[] {
@@ -143,10 +141,10 @@ public class HarnessTests
         var result = await thread.InvokeAsync(question)
             .ConfigureAwait(true);
 
-        await this.AuditorTestsAsync(question, result, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", true).ConfigureAwait(true);
+        await this.AuditorTestsAsync(question, result.Content!, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", true).ConfigureAwait(true);
 
         result = await thread.InvokeAsync("What if the rate is about 3.6%?").ConfigureAwait(true);
-        await this.AuditorTestsAsync(question + "\nWhat if the rate is about 3.6%?", result, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 3.6% interest rate, the future value of the investment would be approximately $50,714.85.", true).ConfigureAwait(true);
+        await this.AuditorTestsAsync(question + "\nWhat if the rate is about 3.6%?", result.Content!, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 3.6% interest rate, the future value of the investment would be approximately $50,714.85.", true).ConfigureAwait(true);
     }
 
     [Theory(Skip = SkipReason)]
@@ -161,19 +159,20 @@ public class HarnessTests
     {
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
-        string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
-        var verifier = AssistantBuilder.FromTemplate("./Assistants/Auditor.yaml",
+        var verifier = Assistant.FromTemplate("./Assistants/Auditor.yaml",
                   azureOpenAIEndpoint,
                   azureOpenAIKey,
                   loggerFactory: this._loggerFactory);
 
-        Assert.Equal(equality, bool.Parse(await verifier.CreateThread()
+        var result = await verifier.CreateThread()
             .InvokeAsync(
             $"Question: {question}\n" +
             $"Answer 1: {answer1}\n" +
             $"Answer 2: {answer2}")
-                .ConfigureAwait(true)));
+                .ConfigureAwait(true);
+
+        Assert.Equal(equality, bool.Parse(result.Content!));
     }
 
 
@@ -188,25 +187,25 @@ public class HarnessTests
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
 
-        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+        var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
                 azureOpenAIEndpoint,
                 azureOpenAIKey,
                 new[] {
                     KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
                 });
 
-        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
+        var butler = Assistant.FromTemplate("./Assistants/Butler.yaml",
                            azureOpenAIEndpoint,
                            azureOpenAIKey);
 
         var logger = this._loggerFactory.CreateLogger("Tests");
 
-        var thread = AssistantBuilder.CreateRoomThread(butler, mathematician);
+        var thread = Assistant.CreateRoomThread(butler, mathematician);
 
         thread.OnMessageReceived += (object? sender, ChatMessageContent message) =>
         {
             var agent = sender as IAssistant;
-            this._output.WriteLine($"{agent.Name} > {message}");
+            this._output.WriteLine($"{agent!.Name} > {message}");
         };
 
         this._output.WriteLine($"User > {prompt}");

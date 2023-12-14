@@ -2,11 +2,13 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
+using SemanticKernel.Assistants.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SemanticKernel.Assistants;
@@ -83,10 +85,10 @@ public class Thread : IThread
 
         await this.ExecutePlannerIfNeededAsync(userMessage).ConfigureAwait(false);
 
-        this._chatHistory.AddUserMessage(userMessage);
+        var chatHistory = this.GetPastMessagesHistory();
+        chatHistory.AddUserMessage(userMessage);
 
-        var agentAnswer = await this._agent.ChatCompletion.GetChatMessageContentAsync(this._chatHistory)
-                                        .ConfigureAwait(false);
+        var agentAnswer = await this._agent.ChatCompletion.GetChatMessageContentAsync(chatHistory).ConfigureAwait(false);
 
         this._chatHistory.Add(agentAnswer);
         this._logger.LogInformation(message: $"{this._agent.Name!} > {agentAnswer.Content}");
@@ -112,15 +114,24 @@ public class Thread : IThread
     {
         var chat = new ChatHistory(SystemIntentExtractionPrompt);
 
-        foreach (var item in this._chatHistory)
+        int includedMessages = 0;
+
+        foreach (var item in this._chatHistory.OrderByDescending(c => this._chatHistory.IndexOf(c)))
         {
+            if (includedMessages >= this._agent.AssistantModel.ExecutionSettings.PastMessagesIncluded)
+            {
+                break;
+            }
+
             if (item.Role == AuthorRole.User)
             {
                 chat.AddUserMessage(item.Content);
+                includedMessages++;
             }
             else if (item.Role == AuthorRole.Assistant)
             {
                 chat.AddAssistantMessage(item.Content);
+                includedMessages++;
             }
         }
 
@@ -129,6 +140,24 @@ public class Thread : IThread
         var chatResult = await this._agent.ChatCompletion.GetChatMessageContentAsync(chat).ConfigureAwait(false);
 
         return chatResult.Content;
+    }
+
+    /// <summary>
+    /// Takes all the system messages from the chat history. Add this._agent.AssistantModel.ExecutionSettings.PastMessagesIncluded messages and return the corresponding history.
+    /// </summary>
+    /// <returns></returns>
+    private ChatHistory GetPastMessagesHistory()
+    {
+        var result = new ChatHistory();
+
+        this._chatHistory.OrderByDescending(c => this._chatHistory.IndexOf(c))
+            .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant)
+            .Take(this._agent.AssistantModel.ExecutionSettings.PastMessagesIncluded)
+            .OrderBy(c => this._chatHistory.IndexOf(c))
+            .ToList()
+            .ForEach(result.Add);
+
+        return result;
     }
 
     private async Task ExecutePlannerIfNeededAsync(string userMessage)
@@ -141,29 +170,29 @@ public class Thread : IThread
         var userIntent = await this.ExtractUserIntentAsync(userMessage)
                                 .ConfigureAwait(false);
 
-        var result = await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
-
-        this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
+        await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
     }
 
-    private async Task<string?> ExecutePlannerAsync(string userIntent)
+    private async Task ExecutePlannerAsync(string userIntent)
     {
         var goal = $"{this._agent.Instructions}\n" +
                             $"Given the following context, accomplish the user intent.\n" +
                             $"{userIntent}";
 
-        switch (this._agent.Planner)
+        switch (this._agent.Planner.ToLower())
         {
-            case "Handlebars":
-                return await this.ExecuteHandleBarsPlannerAsync(goal).ConfigureAwait(false);
-            case "Stepwise":
-                return await this.ExecuteStepwisePlannerAsync(goal).ConfigureAwait(false);
+            case "handlebars":
+                await this.ExecuteHandleBarsPlannerAsync(goal).ConfigureAwait(false);
+                break;
+            case "stepwise":
+                await this.ExecuteStepwisePlannerAsync(goal).ConfigureAwait(false);
+                break;
             default:
                 throw new NotImplementedException($"Planner {this._agent.Planner} is not implemented.");
         }
     }
 
-    private async Task<string> ExecuteHandleBarsPlannerAsync(string goal, int maxTries = 3)
+    private async Task ExecuteHandleBarsPlannerAsync(string goal, int maxTries = 3)
     {
         HandlebarsPlan? lastPlan = null;
         Exception? lastError = null;
@@ -181,9 +210,10 @@ public class Thread : IThread
                 var plan = await planner.CreatePlanAsync(this._agent.Kernel, goal).ConfigureAwait(false);
                 lastPlan = plan;
 
-                var result = plan.Invoke(this._agent.Kernel, new KernelArguments(this._arguments));
+                var result = await plan.InvokeAsync(this._agent.Kernel, new KernelArguments(this._arguments)).ConfigureAwait(false);
 
-                return result;
+                this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
+                return;
             }
             catch (Exception e)
             {
@@ -200,7 +230,7 @@ public class Thread : IThread
         throw lastError;
     }
 
-    private async Task<string> ExecuteStepwisePlannerAsync(string goal)
+    private async Task ExecuteStepwisePlannerAsync(string goal)
     {
         var config = new FunctionCallingStepwisePlannerConfig
         {
@@ -211,6 +241,10 @@ public class Thread : IThread
 
         var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);
 
-        return result.FinalAnswer;
+        result.ChatHistory.Where(c => c.Role == AuthorRole.Assistant)
+            .ToList()
+            .ForEach(this._chatHistory.Add);
+
+        this._chatHistory.AddFunctionMessage(result.FinalAnswer!.Trim(), this._agent.Name!);
     }
 }

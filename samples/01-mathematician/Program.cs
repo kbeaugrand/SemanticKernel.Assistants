@@ -19,20 +19,19 @@ using var loggerFactory = LoggerFactory.Create(logging =>
         {
             opts.FormatterName = "simple";
         })
-        .ClearProviders()
         .AddConfiguration(configuration.GetSection("Logging"));
 });
 
 string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
 string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
 
-var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
     azureOpenAIEndpoint,
     azureOpenAIKey,
-    plugins: new List<IKernelPlugin>()
+    plugins: new List<KernelPlugin>()
     {
        KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-    });
+    }, loggerFactory: loggerFactory);
 
 var thread = mathematician.CreateThread();
 

@@ -19,9 +19,9 @@ internal static class KernelExtensions
     /// <param name="model">The <see cref="AgentAssistantModel"/> instance.</param>
     public static void ImportPluginFromAgent(this Kernel kernel, IAssistant agent, IAssistant otherAssistant)
     {
-        var agentConversationPlugin = new KernelPlugin(otherAssistant.Name!, otherAssistant.Description!);
+        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!);
 
-        agentConversationPlugin.AddFunctionFromMethod(async (string input, KernelArguments args) =>
+        KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
         {
             if (!agent.AssistantThreads.TryGetValue(otherAssistant, out var thread))
             {

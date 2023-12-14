@@ -1,6 +1,7 @@
 # Assistants for Semantic Kernel
 
-This enables the usage of assistants for the Semantic Kernel.
+This enables the usage of assistants for the Semantic Kernel without relying on OpenAI Assistant APIs.
+It runs locally planners and plugins for the assistants.
 
 It provides different scenarios for the usage of assistants such as:
 - **Assistant with Semantic Kernel plugins**

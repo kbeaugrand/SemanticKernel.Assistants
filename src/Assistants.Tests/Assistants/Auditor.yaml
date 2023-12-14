@@ -10,4 +10,4 @@ instructions: |
 execution_settings:
   planner: Handlebars
   model: gpt-4
-  deployment_name: gpt-4-1106-preview
+  service_id: gpt-4-1106-preview

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
+using HandlebarsDotNet;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using HandlebarsDotNet;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace SemanticKernel.Assistants.RoomThread;
 
@@ -43,7 +44,7 @@ internal class RoomThread : IRoomThread
 
     public async Task AddUserMessageAsync(string message)
     {
-        await this.DispatchMessageRecievedAsync("User", message).ConfigureAwait(false);
+        await this.DispatchMessageRecievedAsync("User", new ChatMessageContent(AuthorRole.User, message)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -52,7 +53,7 @@ internal class RoomThread : IRoomThread
     /// <param name="sender">The sender of the message (can be the agent name or "User").</param>
     /// <param name="message">The message..</param>
     /// <returns></returns>
-    private async Task DispatchMessageRecievedAsync(string sender, string message)
+    private async Task DispatchMessageRecievedAsync(string sender, ChatMessageContent message)
     {
         await Task.WhenAll(this._assistantThreads
                      .Where(c => c.Key.Name != sender)

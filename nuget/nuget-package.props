@@ -16,9 +16,9 @@
 
     <!-- Required license, copyright, and repo information. Packages can override. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>© Kevin BEAUGRAND. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/kbeaugrand/SemanticKernel.Connectors.Memory.SqlServer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kbeaugrand/SemanticKernel.Connectors.Memory.SqlServer</RepositoryUrl>
+    <Copyright>Â© Kevin BEAUGRAND. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/kbeaugrand/SemanticKernel.Assistants</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kbeaugrand/SemanticKernel.Assistants</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <!-- Use icon and NUGET readme from dotnet/nuget folder -->

@@ -7,7 +7,8 @@
 
 This is assistant proposal for the [Semantic Kernel](https://aka.ms/semantic-kernel).
 
-This enables the usage of assistants for the Semantic Kernel.
+This enables the usage of assistants for the Semantic Kernel **without relying on OpenAI Assistant APIs**.
+It runs locally planners and plugins for the assistants.
 
 It provides different scenarios for the usage of assistants such as:
 - **Assistant with Semantic Kernel plugins**
@@ -41,7 +42,7 @@ proprietary data.
 To install this memory store, you need to add the required nuget package to your project:
 
 ```dotnetcli
-dotnet add package SemanticKernel.Assistants --version 1.0.0-rc3
+dotnet add package SemanticKernel.Assistants --version 1.0.0-rc4
 ```
 
 ## Usage
@@ -63,14 +64,14 @@ dotnet add package SemanticKernel.Assistants --version 1.0.0-rc3
     execution_settings:
       planner: Handlebars
       model: gpt-3.5-turbo
-      deployment_name: gpt-35-turbo-1106
+      service_id: gpt-35-turbo-1106
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
    string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
 
-    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+    var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
         azureOpenAIEndpoint,
         azureOpenAIKey,
         plugins: new List<IKernelPlugin>()
@@ -80,7 +81,7 @@ dotnet add package SemanticKernel.Assistants --version 1.0.0-rc3
    ```
 3. Create a new conversation thread with your assistant.
    ```csharp
-   var thread = agent.CreateThread();
+   var thread = mathematician.CreateThread();
    await thread.InvokeAsync("Your ask to the assistant.");
    ```
 
