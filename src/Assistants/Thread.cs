@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using SemanticKernel.Assistants.Extensions;
@@ -27,6 +28,11 @@ public class Thread : IThread
     /// The chat history of this thread.
     /// </summary>
     private readonly ChatHistory _chatHistory;
+
+    /// <summary>
+    /// The settings for the OpenAI prompt execution.
+    /// </summary>
+    private readonly OpenAIPromptExecutionSettings _openAIPromptExecutionSettings;
 
     /// <summary>
     /// The prompt to use for extracting the user intent.
@@ -73,6 +79,16 @@ public class Thread : IThread
         this._chatHistory = new ChatHistory(this._agent.Description!);
 
         this._chatHistory.AddSystemMessage(this._agent.Instructions);
+
+        this._openAIPromptExecutionSettings = new()
+        {
+            Temperature = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.Temperature,
+            TopP = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.TopP,
+            FrequencyPenalty = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.FrequencyPenalty,
+            PresencePenalty = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.PresencePenalty,
+            MaxTokens = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.MaxTokens,
+            StopSequences = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.StopSequences                       
+        };
     }
 
     /// <summary>
@@ -88,7 +104,7 @@ public class Thread : IThread
         var chatHistory = this.GetPastMessagesHistory();
         chatHistory.AddUserMessage(userMessage);
 
-        var agentAnswer = await this._agent.ChatCompletion.GetChatMessageContentAsync(chatHistory).ConfigureAwait(false);
+        var agentAnswer = await this._agent.ChatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings: this._openAIPromptExecutionSettings).ConfigureAwait(false);
 
         this._chatHistory.Add(agentAnswer);
         this._logger.LogInformation(message: $"{this._agent.Name!} > {agentAnswer.Content}");
@@ -151,7 +167,7 @@ public class Thread : IThread
         var result = new ChatHistory();
 
         this._chatHistory.OrderByDescending(c => this._chatHistory.IndexOf(c))
-            .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant)
+            .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant || c.Role == AuthorRole.System)
             .Take(this._agent.AssistantModel.ExecutionSettings.PastMessagesIncluded)
             .OrderBy(c => this._chatHistory.IndexOf(c))
             .ToList()

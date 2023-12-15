@@ -117,7 +117,6 @@ public class HarnessTests
     {
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
-        string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
         var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
                 azureOpenAIEndpoint,
@@ -148,9 +147,16 @@ public class HarnessTests
     }
 
     [Theory(Skip = SkipReason)]
-    [InlineData("What is the square root of 4?", "square result is 2", "2 is the square of 4.", true)]
-    [InlineData("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?", "The future value of $25,000 invested at a 5% interest rate for 20 years would be approximately $66,332.44.", "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", true)]
-    [InlineData("If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?", "If the interest rate is 3.6%, the future value of the $25,000 investment over 20 years would be approximately $47,688.04.", "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", false)]
+    [InlineData(
+        "If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?", 
+        "The future value of $25,000 invested at a 5% interest rate for 20 years would be approximately $66,332.44.", 
+        "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", 
+        true)]
+    [InlineData(
+        "If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?", 
+        "If the interest rate is 3.6%, the future value of the $25,000 investment over 20 years would be approximately $47,688.04.", 
+        "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", 
+        false)]
     public async Task AuditorTestsAsync(
         string question,
         string answer1,

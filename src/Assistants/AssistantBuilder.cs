@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.Assistants.Extensions;
 using SemanticKernel.Assistants.Models;
+using System;
 using System.Collections.Generic;
 
 namespace SemanticKernel.Assistants;
@@ -164,6 +166,18 @@ public partial class AssistantBuilder
     {
         this._loggerFactory = loggerFactory;
         this._kernelBuilder.Services.AddSingleton(loggerFactory);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the agent's execution settings.
+    /// </summary>
+    /// <param name="executionSettings"></param>
+    /// <returns></returns>
+    public AssistantBuilder WithExecutionSettings(AssistantPromptExecutionSettings executionSettings)
+    {
+        this._model.ExecutionSettings.PromptExecutionSettings = executionSettings;
 
         return this;
     }

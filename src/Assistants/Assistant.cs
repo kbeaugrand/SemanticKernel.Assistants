@@ -121,6 +121,7 @@ public sealed class Assistant : IAssistant
             .WithDescription(agentModel.Description!.Trim())
             .WithInstructions(agentModel.Instructions.Trim())
             .WithPlanner(agentModel.ExecutionSettings.Planner?.Trim())
+            .WithExecutionSettings(agentModel.ExecutionSettings.PromptExecutionSettings)
             .WithInputParameter(agentModel.Input.Description?.Trim()!, agentModel.Input.DefaultValue?.Trim()!)
             .WithAzureOpenAIChatCompletion(agentModel.ExecutionSettings.ServiceId!, agentModel.ExecutionSettings.Model!, azureOpenAIEndpoint, azureOpenAIKey);
 

@@ -17,4 +17,7 @@ internal class AssistantExecutionSettings
 
     [YamlMember(Alias = "past_messages_included")]
     public int PastMessagesIncluded { get; set; } = 10;
+
+    [YamlMember(Alias = "prompt_settings")]
+    public AssistantPromptExecutionSettings PromptExecutionSettings { get; set; } = new();
 }
