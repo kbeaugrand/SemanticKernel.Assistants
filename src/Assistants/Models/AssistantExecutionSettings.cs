@@ -12,6 +12,12 @@ internal class AssistantExecutionSettings
     [YamlMember(Alias = "model")]
     public string? Model { get; set; }
 
-    [YamlMember(Alias = "deployment_name")]
-    public string? DeploymentName { get; set; }
+    [YamlMember(Alias = "service_id")]
+    public string? ServiceId { get; set; }
+
+    [YamlMember(Alias = "past_messages_included")]
+    public int PastMessagesIncluded { get; set; } = 10;
+
+    [YamlMember(Alias = "prompt_settings")]
+    public AssistantPromptExecutionSettings PromptExecutionSettings { get; set; } = new();
 }

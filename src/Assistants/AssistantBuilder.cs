@@ -4,12 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.Assistants.Extensions;
 using SemanticKernel.Assistants.Models;
-using SemanticKernel.Assistants.RoomThread;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using YamlDotNet.Serialization;
 
 namespace SemanticKernel.Assistants;
 
@@ -31,7 +30,7 @@ public partial class AssistantBuilder
     /// <summary>
     /// The agent's plugins.
     /// </summary>
-    private readonly List<IKernelPlugin> _plugins;
+    private readonly List<KernelPlugin> _plugins;
 
     /// <summary>
     /// The logger factory.
@@ -41,7 +40,7 @@ public partial class AssistantBuilder
     /// <summary>
     /// The kernel builder.
     /// </summary>
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
@@ -50,8 +49,8 @@ public partial class AssistantBuilder
     {
         this._model = new AssistantModel();
         this._assistants = new List<IAssistant>();
-        this._kernelBuilder = new KernelBuilder();
-        this._plugins = new List<IKernelPlugin>();
+        this._kernelBuilder = Kernel.CreateBuilder();
+        this._plugins = new List<KernelPlugin>();
     }
 
     /// <summary>
@@ -117,11 +116,11 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithAzureOpenAIChatCompletion(string deploymentName, string model, string endpoint, string apiKey)
     {
-        this._model.ExecutionSettings.DeploymentName = deploymentName;
+        this._model.ExecutionSettings.ServiceId = deploymentName;
         this._model.ExecutionSettings.Model = model;
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, model, endpoint, apiKey);
-        this._kernelBuilder.AddAzureOpenAITextGeneration(deploymentName, model, endpoint, apiKey);
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName: deploymentName, endpoint: endpoint, apiKey: apiKey, modelId: model);
+        this._kernelBuilder.AddAzureOpenAITextGeneration(deploymentName: deploymentName, endpoint: endpoint, apiKey: apiKey, modelId: model);
         return this;
     }
 
@@ -130,7 +129,7 @@ public partial class AssistantBuilder
     /// </summary>
     /// <param name="plugin"></param>
     /// <returns></returns>
-    public AssistantBuilder WithPlugin(IKernelPlugin plugin)
+    public AssistantBuilder WithPlugin(KernelPlugin plugin)
     {
         this._plugins.Add(plugin);
         return this;
@@ -172,6 +171,18 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
+    /// Configures the agent's execution settings.
+    /// </summary>
+    /// <param name="executionSettings"></param>
+    /// <returns></returns>
+    public AssistantBuilder WithExecutionSettings(AssistantPromptExecutionSettings executionSettings)
+    {
+        this._model.ExecutionSettings.PromptExecutionSettings = executionSettings;
+
+        return this;
+    }
+
+    /// <summary>
     /// Defines the agent's input parameter.
     /// </summary>
     /// <param name="inputParameter">The input parameter.</param>
@@ -184,70 +195,5 @@ public partial class AssistantBuilder
             Description = description,
         };
         return this;
-    }
-
-    /// <summary>
-    /// Creates a new agent from a yaml template.
-    /// </summary>
-    /// <param name="definitionPath">The yaml definition file path.</param>
-    /// <param name="azureOpenAIEndpoint">The Azure OpenAI endpoint.</param>
-    /// <param name="azureOpenAIKey">The Azure OpenAI key.</param>
-    /// <param name="plugins">The plugins.</param>
-    /// <param name="assistants">The assistants.</param>
-    /// <param name="loggerFactory">The logger factory instance.</param>
-    /// <returns></returns>
-    public static IAssistant FromTemplate(
-        string definitionPath,
-        string azureOpenAIEndpoint,
-        string azureOpenAIKey,
-        IEnumerable<IKernelPlugin>? plugins = null,
-        ILoggerFactory? loggerFactory = null,
-        params IAssistant[] assistants)
-    {
-        var deserializer = new DeserializerBuilder().Build();
-        var yamlContent = File.ReadAllText(definitionPath);
-
-        var agentModel = deserializer.Deserialize<AssistantModel>(yamlContent);
-
-        var agentBuilder = new AssistantBuilder()
-            .WithName(agentModel.Name!.Trim())
-            .WithDescription(agentModel.Description!.Trim())
-            .WithInstructions(agentModel.Instructions.Trim())
-            .WithPlanner(agentModel.ExecutionSettings.Planner?.Trim())
-            .WithInputParameter(agentModel.Input.Description?.Trim()!, agentModel.Input.DefaultValue?.Trim()!)
-            .WithAzureOpenAIChatCompletion(agentModel.ExecutionSettings.DeploymentName!, agentModel.ExecutionSettings.Model!, azureOpenAIEndpoint, azureOpenAIKey);
-
-        if (plugins is not null)
-        {
-            foreach (var plugin in plugins)
-            {
-                agentBuilder.WithPlugin(plugin);
-            }
-        }
-
-        if (assistants is not null)
-        {
-            foreach (var assistant in assistants)
-            {
-                agentBuilder.WithAssistant(assistant);
-            }
-        }
-
-        if (loggerFactory is not null)
-        {
-            agentBuilder.WithLoggerFactory(loggerFactory);
-        }
-
-        return agentBuilder.Build();
-    }
-
-    /// <summary>
-    /// Creates a new room thread for collaborative agents.
-    /// </summary>
-    /// <param name="agents">The collaborative agents.</param>
-    /// <returns></returns>
-    public static IRoomThread CreateRoomThread(params IAssistant[] agents)
-    {
-        return new RoomThread.RoomThread(agents);
     }
 }

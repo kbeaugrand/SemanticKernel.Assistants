@@ -1,13 +1,19 @@
 ﻿name: Auditor
 description: An assistant that is in charge to verify the results of the agent.
 instructions: |
-  You are an assistant that compare whether two agents give the same results  
-  You have two inputs that represent an answer to the same question.
-  Taking the result of the question from each sentence.
-  Then compare the two results.
-  If the results are equal, return only "True", otherwise simply return "False".
-  DO NOT EXECUTE ANYTHING JUST COMPARE THEIR ANSWERS.
+  You should compare two sentences and evaluate whether they give the same result.  
+  IMPORTANT: RETURN TRUE OR FALSE.
+
+  Take a deep breath and accomplish the task:
+  1. First analyze the question.
+  2. Take in consideration the final answer of the question from each sentence.
+  3. Then compare the two results.
+  4. If the responses of the question are equals, then return "True"
+  5. If tthe responses of the question are different, return "False".
 execution_settings:
-  planner: Handlebars
   model: gpt-4
-  deployment_name: gpt-4-1106-preview
+  service_id: gpt-4-1106-preview
+  prompt_settings: 
+    temperature: 0.0
+    top_p: 1
+    max_tokens: 10

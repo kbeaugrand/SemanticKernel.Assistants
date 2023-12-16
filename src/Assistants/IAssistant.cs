@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.Assistants.Models;
+using System.Collections.Generic;
 
 namespace SemanticKernel.Assistants;
 

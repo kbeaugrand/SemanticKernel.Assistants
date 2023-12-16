@@ -21,11 +21,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.0.0-rc3" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.0-rc3" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.0.0-rc3" />
-    <PackageReference Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.0.0-rc3" />
-    <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.0.0-rc3" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.0.0-rc4" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.0-rc4" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.0.0-rc4" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.0.0-rc4" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.0.0-rc4" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.6.3" />
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel;
 using System;
 using System.Threading.Tasks;
 
