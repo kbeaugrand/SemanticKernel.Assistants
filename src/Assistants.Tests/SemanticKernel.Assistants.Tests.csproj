@@ -12,7 +12,7 @@
     <NoWarn>CS1591;SKEXP0001;SKEXP0050;SKEXP0060;SKEXP0061</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" >
     <DefineConstants>$(DefineConstants);DISABLEHOST</DefineConstants>
   </PropertyGroup>
 

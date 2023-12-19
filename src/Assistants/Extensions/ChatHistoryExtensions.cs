@@ -8,7 +8,7 @@ namespace SemanticKernel.Assistants.Extensions
     {
         public static void AddFunctionMessage(this ChatHistory chatHistory, string message, string functionName)
         {
-            chatHistory.AddMessage(new("function"), message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolCallsProperty, functionName } });
+            chatHistory.AddMessage(new("function"), message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionName } });
         }
     }
 }
