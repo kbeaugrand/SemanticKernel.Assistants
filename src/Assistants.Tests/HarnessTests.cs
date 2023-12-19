@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.Assistants;
+using SemanticKernel.Assistants.Tests.Plugins;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
