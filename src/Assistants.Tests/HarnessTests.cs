@@ -11,11 +11,11 @@ namespace SemanticKernel.Experimental.Agents.Tests;
 
 public class HarnessTests
 {
-#if DISABLEHOST
-    private const string SkipReason = "Harness only for local/dev environment";
-#else
+//#if DISABLEHOST
+//    private const string SkipReason = "Harness only for local/dev environment";
+//#else
     private const string SkipReason = null;
-#endif
+//#endif
 
     private readonly ITestOutputHelper _output;
 

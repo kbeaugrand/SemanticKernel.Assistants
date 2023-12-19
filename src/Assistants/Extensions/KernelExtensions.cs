@@ -19,36 +19,39 @@ internal static class KernelExtensions
     /// <param name="model">The <see cref="AgentAssistantModel"/> instance.</param>
     public static void ImportPluginFromAgent(this Kernel kernel, IAssistant agent, IAssistant otherAssistant)
     {
-        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!);
-
-        KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
+        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!, functions: new[] 
         {
-            if (!agent.AssistantThreads.TryGetValue(otherAssistant, out var thread))
-            {
-                thread = otherAssistant.CreateThread();
-                agent.AssistantThreads.Add(otherAssistant, thread);
-            }
 
-            return await thread.InvokeAsync(input).ConfigureAwait(false);
-        },
-        functionName: "Ask",
-        description: otherAssistant.Description,
-        parameters: new[]
-        {
-            new KernelParameterMetadata("input")
-
+            KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
             {
-                IsRequired = true,
+                if (!agent.AssistantThreads.TryGetValue(otherAssistant, out var thread))
+                {
+                    thread = otherAssistant.CreateThread();
+                    agent.AssistantThreads.Add(otherAssistant, thread);
+                }
+
+                return await thread.InvokeAsync(input).ConfigureAwait(false);
+            },
+            functionName: "Ask",
+            description: otherAssistant.Description,
+            parameters: new[]
+            {
+                new KernelParameterMetadata("input")
+
+                {
+                    IsRequired = true,
+                    ParameterType = typeof(string),
+                    DefaultValue = otherAssistant.AssistantModel.Input.DefaultValue,
+                    Description = otherAssistant.AssistantModel.Input.Description
+                }
+            }, returnParameter: new()
+            {
                 ParameterType = typeof(string),
-                DefaultValue = otherAssistant.AssistantModel.Input.DefaultValue,
-                Description = otherAssistant.AssistantModel.Input.Description
-            }
-        }, returnParameter: new()
-        {
-            ParameterType = typeof(string),
-            Description = "The response from the assistant."
-        },
-        loggerFactory: kernel.LoggerFactory);
+                Description = "The response from the assistant."
+            },
+            loggerFactory: kernel.LoggerFactory)
+
+        });
 
         kernel.Plugins.Add(agentConversationPlugin);
     }
