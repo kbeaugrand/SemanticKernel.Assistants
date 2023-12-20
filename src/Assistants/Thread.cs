@@ -97,24 +97,25 @@ public class Thread : IThread
     /// <returns></returns>
     public async Task<ChatMessageContent> InvokeAsync(string userMessage)
     {
-        this._logger.LogInformation($"{this._callerName} > {userMessage}");
+        this._logger.LogInformation($"{this._callerName} > {this._agent.Name}:\n{userMessage}");
 
-        await this.ExecutePlannerIfNeededAsync(userMessage).ConfigureAwait(false);
+        ChatMessageContent assistantAnswer;
 
-        var chatHistory = this.GetPastMessagesHistory();
-
-        chatHistory.AddUserMessage(userMessage);
-
-        var agentAnswer = await this._agent.ChatCompletion
-                                .GetChatMessageContentAsync(chatHistory, executionSettings: this._openAIPromptExecutionSettings)
-                                .ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(this._agent.Planner))
+        {
+            assistantAnswer = new ChatMessageContent(AuthorRole.Assistant, await this.GetPlannerAnswer(userMessage).ConfigureAwait(false));
+        }
+        else
+        {
+            assistantAnswer = new ChatMessageContent(AuthorRole.Assistant, await this.GetChatAnswer(userMessage).ConfigureAwait(false));
+        }        
 
         this._chatHistory.AddUserMessage(userMessage);
-        this._chatHistory.Add(agentAnswer);
+        this._chatHistory.Add(assistantAnswer);
 
-        this._logger.LogInformation(message: $"{this._agent.Name!} > {agentAnswer.Content}");
+        this._logger.LogInformation(message: $"{this._agent.Name!} > {this._callerName}:\n{assistantAnswer.Content}");
 
-        return agentAnswer;
+        return assistantAnswer;
     }
 
     /// <summary>
@@ -127,6 +128,41 @@ public class Thread : IThread
     }
 
     /// <summary>
+    /// Returns the answer from the planner based on the user intent.
+    /// </summary>
+    /// <param name="userMessage">The latest user message.</param>
+    /// <returns></returns>
+    private async Task<string> GetPlannerAnswer(string userMessage)
+    {
+        var userIntent = await this.ExtractUserIntentAsync(userMessage)
+                                    .ConfigureAwait(false);
+
+        var plannerResult = await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
+
+        this._logger.LogTrace($"Planner result: {plannerResult}");
+
+        return plannerResult;
+    }
+
+    /// <summary>
+    /// Returns the answer from the assistant based on the chat history and assistant persona.
+    /// </summary>
+    /// <param name="userMessage">The latest user message.</param>
+    /// <returns></returns>
+    private async Task<string> GetChatAnswer(string userMessage)
+    {
+        var chatHistory = this.GetPastMessagesHistory();
+
+        chatHistory.AddUserMessage(userMessage);
+
+        var agentAnswer = await this._agent.ChatCompletion
+                                .GetChatMessageContentAsync(chatHistory, executionSettings: this._openAIPromptExecutionSettings)
+                                .ConfigureAwait(false);
+
+        return agentAnswer.Content;
+    }
+
+    /// <summary>
     /// Extracts the user intent from the chat history.
     /// </summary>
     /// <param name="userMessage">The user message.</param>
@@ -134,8 +170,6 @@ public class Thread : IThread
     private async Task<string> ExtractUserIntentAsync(string userMessage)
     {
         var chat = new ChatHistory(SystemIntentExtractionPrompt);
-
-        chat.AddSystemMessage(this._agent.Instructions);
 
         this._chatHistory.OrderByDescending(c => this._chatHistory.IndexOf(c))
             .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant)
@@ -167,23 +201,6 @@ public class Thread : IThread
             .ForEach(result.Add);
 
         return result;
-    }
-
-    private async Task ExecutePlannerIfNeededAsync(string userMessage)
-    {
-        if (string.IsNullOrEmpty(this._agent.Planner))
-        {
-            return;
-        }
-
-        var userIntent = await this.ExtractUserIntentAsync(userMessage)
-                                .ConfigureAwait(false);
-
-        var plannerResult = await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
-
-        this._logger.LogInformation($"Planner result: {plannerResult}");
-
-        this._chatHistory.AddSystemMessage(plannerResult);
     }
 
     private async Task<string> ExecutePlannerAsync(string userIntent)
@@ -220,6 +237,8 @@ public class Thread : IThread
 
                 var plan = await planner.CreatePlanAsync(this._agent.Kernel, goal).ConfigureAwait(false);
                 lastPlan = plan;
+
+                this._logger.LogDebug($"Plan: {plan}");
 
                 var result = await plan.InvokeAsync(this._agent.Kernel, new KernelArguments(this._arguments)).ConfigureAwait(false);
 

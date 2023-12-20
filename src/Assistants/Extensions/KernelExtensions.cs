@@ -21,12 +21,11 @@ internal static class KernelExtensions
     {
         var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!, functions: new[] 
         {
-
             KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
             {
                 if (!agent.AssistantThreads.TryGetValue(otherAssistant, out var thread))
                 {
-                    thread = otherAssistant.CreateThread();
+                    thread = otherAssistant.CreateThread(agent, args.ToDictionary());
                     agent.AssistantThreads.Add(otherAssistant, thread);
                 }
 

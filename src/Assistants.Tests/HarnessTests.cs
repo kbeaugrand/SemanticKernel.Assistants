@@ -122,20 +122,29 @@ public class HarnessTests
                 azureOpenAIEndpoint,
                 azureOpenAIKey,
                 new[] {
-                    KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
+                    KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
                 },
                 loggerFactory: this._loggerFactory);
+
+        var financial = Assistant.FromTemplate("./Assistants/FinancialCalculator.yaml",
+            azureOpenAIEndpoint,
+            azureOpenAIKey,
+            new[] {
+                        KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
+            },
+            loggerFactory: this._loggerFactory);
 
         var butler = Assistant.FromTemplate("./Assistants/Butler.yaml",
                            azureOpenAIEndpoint,
                            azureOpenAIKey,
                            assistants: new[] {
-                               mathematician
+                               mathematician,
+                               financial
                            },
                            loggerFactory: this._loggerFactory);
 
         var thread = butler.CreateThread();
-        var question = "If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, how much would I have?";
+        var question = "If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% annual interest rate, how much would I have?";
 
         var result = await thread.InvokeAsync(question)
             .ConfigureAwait(true);
