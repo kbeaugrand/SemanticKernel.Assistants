@@ -25,19 +25,28 @@ using var loggerFactory = LoggerFactory.Create(logging =>
 string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
 string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
 
-var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
+var financialCalculator = Assistant.FromTemplate("./Assistants/FinancialCalculator.yaml",
     azureOpenAIEndpoint,
     azureOpenAIKey,
     plugins: new List<KernelPlugin>()
     {
-       KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
+       KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
     }, loggerFactory: loggerFactory);
 
-var thread = mathematician.CreateThread();
+var assistant = Assistant.FromTemplate("./Assistants/Butler.yaml",
+       azureOpenAIEndpoint,
+       azureOpenAIKey,
+       assistants: new IAssistant[]
+       {
+           financialCalculator
+       }
+       ,loggerFactory: loggerFactory);
+
+var thread = assistant.CreateThread();
 
 while (true)
 {
     Console.Write("User > ");
     var result = await thread.InvokeAsync(Console.ReadLine());
-    Console.WriteLine($"Mathematician > {result.Content.Trim()}");
+    Console.WriteLine($"{assistant.Name} > {result.Content.Trim()}");
 }
