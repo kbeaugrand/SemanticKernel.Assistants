@@ -8,4 +8,4 @@ instructions: |
 execution_settings:
   planner: Stepwise
   model: gpt-3.5-turbo
-  deployment_name: gpt-35-turbo-1106
+  service_id: gpt-35-turbo-1106

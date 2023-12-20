@@ -3,6 +3,7 @@ description: A mathematician that resolves given maths problems.
 instructions: |
   You are a mathematician.
   Given a math problem, you must answer it by calculating it.
+  Do not assume anything about the math problem, if some variables are missing, ask for them.
 input_parameter: 
   default_value: ""
   description: |
@@ -11,4 +12,4 @@ input_parameter:
 execution_settings:
   planner: Handlebars
   model: gpt-3.5-turbo
-  deployment_name: gpt-35-turbo-1106
+  service_id: gpt-35-turbo-1106

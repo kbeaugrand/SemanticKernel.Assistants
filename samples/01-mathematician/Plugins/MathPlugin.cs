@@ -9,19 +9,6 @@ namespace _01_mathematician.Plugins;
 public sealed class MathPlugin
 {
     [KernelFunction]
-    [Description("Calculates the future value of an investment using the formula for the future value of a series of payments (annuity) under compound interest. It considers the initial investment, the interest rate, the number of periods, and the annual contributions to compute the final amount the investment will grow to after the specified time period.")]
-    [return: Description("The future value of the investment after a specified number of periods considering compound interest and annual contributions.")]
-    public static double CalculateFutureValue(
-        [Description("The principal amount or the initial investment value")] double P,
-        [Description("The interest rate per period, expressed as a decimal")] double r,
-        [Description("The number of periods, typically representing time in years.")] int n,
-        [Description("The annual payment or the amount added each year to the investment.")] double PMT)
-    {
-        double FV = P * ((Math.Pow(1 + r, n) - 1) / r) + PMT * ((Math.Pow(1 + r, n) - 1) / r);
-        return FV;
-    }
-
-    [KernelFunction]
     [Description("Adds two numbers. This takes only 2 numbers.")]
     [return: Description("The summation of the numbers.")]
     public static double Add(
