@@ -65,6 +65,10 @@ dotnet add package SemanticKernel.Assistants --version 1.0.0-rc4
       planner: Handlebars
       model: gpt-3.5-turbo
       service_id: gpt-35-turbo-1106
+      prompt_settings: 
+        temperature: 0.0
+        top_p: 1
+        max_tokens: 2000
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
