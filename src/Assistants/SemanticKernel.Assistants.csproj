@@ -30,16 +30,6 @@
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Assistants</Title>
-    <Description>
-      This enables the usage of assistants for the Semantic Kernel.
-
-      It provides different scenarios for the usage of assistants such as:
-      - **Assistant with Semantic Kernel plugins**
-      - **Multi-Assistant conversation**
-    </Description>
-  </PropertyGroup>
+  <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 
 </Project>
