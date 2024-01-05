@@ -11,11 +11,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{96B59E8F-BF3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{803BA424-8745-4689-9C1D-72CA4384E6AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "01-mathematician", "samples\01-mathematician\01-mathematician.csproj", "{BBC6C36F-DC43-4FD3-9706-ECA4738F8F57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "01-mathematician", "samples\01-mathematician\01-mathematician.csproj", "{BBC6C36F-DC43-4FD3-9706-ECA4738F8F57}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution files", "Solution files", "{324300B5-4DBA-4DF0-957C-75458CCF93CE}"
 	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+		src\Directory.Build.targets = src\Directory.Build.targets
+		src\Directory.Packages.props = src\Directory.Packages.props
 		nuget\nuget-package.props = nuget\nuget-package.props
+		src\nuget.config = src\nuget.config
 		nuget\NUGET.md = nuget\NUGET.md
 		README.md = README.md
 	EndProjectSection

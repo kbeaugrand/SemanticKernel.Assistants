@@ -29,6 +29,10 @@ It provides different scenarios for the usage of assistants such as:
       planner: Handlebars
       model: gpt-3.5-turbo
       service_id: gpt-35-turbo-1106
+      prompt_settings: 
+        temperature: 0.0
+        top_p: 1
+        max_tokens: 100
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
@@ -39,11 +43,11 @@ It provides different scenarios for the usage of assistants such as:
         azureOpenAIEndpoint,
         azureOpenAIKey,
         plugins: new List<IKernelPlugin>()
-        {
+        {3. Create a new conversation thread with your assistant.
+
            KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
         });
    ```
-3. Create a new conversation thread with your assistant.
    ```csharp
    var thread = mathematician.CreateThread();
    await thread.InvokeAsync("Your ask to the assistant.");
