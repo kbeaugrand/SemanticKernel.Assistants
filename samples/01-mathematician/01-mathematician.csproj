@@ -18,9 +18,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Spectre.Console" Version="0.48.0" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.48.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Assistants.Ollama\SemanticKernel.Assistants.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Assistants\SemanticKernel.Assistants.csproj" />
   </ItemGroup>
 

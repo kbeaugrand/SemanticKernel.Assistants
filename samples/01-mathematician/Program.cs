@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
+using Spectre.Console;
 
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
@@ -22,31 +23,49 @@ using var loggerFactory = LoggerFactory.Create(logging =>
         .AddConfiguration(configuration.GetSection("Logging"));
 });
 
-string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
-string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
+AnsiConsole.Write(new FigletText($"Copilot").Color(Color.Green));
+AnsiConsole.WriteLine("");
 
-var financialCalculator = Assistant.FromTemplate("./Assistants/FinancialCalculator.yaml",
-    azureOpenAIEndpoint,
-    azureOpenAIKey,
-    plugins: new List<KernelPlugin>()
-    {
-       KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
-    }, loggerFactory: loggerFactory);
+IAssistant assistant = null!;
 
-var assistant = Assistant.FromTemplate("./Assistants/Butler.yaml",
-       azureOpenAIEndpoint,
-       azureOpenAIKey,
-       assistants: new IAssistant[]
-       {
-           financialCalculator
-       }
-       ,loggerFactory: loggerFactory);
+AnsiConsole.Status().Start("Initializing...", ctx =>
+{
+
+    string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
+    string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
+    string ollamaEndpoint = configuration["OllamaEndpoint"]!;
+
+    var financialCalculator = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml",
+        plugins: new List<KernelPlugin>()
+        {
+            KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
+        }, loggerFactory: loggerFactory)
+                .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                .Build(); ;
+
+    assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
+           assistants: new IAssistant[]
+           {
+                financialCalculator
+           }, loggerFactory: loggerFactory)
+                .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                .Build();
+});
 
 var thread = assistant.CreateThread();
 
 while (true)
 {
-    Console.Write("User > ");
-    var result = await thread.InvokeAsync(Console.ReadLine());
-    Console.WriteLine($"{assistant.Name} > {result.Content.Trim()}");
+    var prompt = AnsiConsole.Prompt(new TextPrompt<string>("User > ").PromptStyle("teal"));
+
+    await AnsiConsole.Status().StartAsync("Processing...", async ctx =>
+    {
+        ctx.Spinner(Spinner.Known.Star);
+        ctx.SpinnerStyle(Style.Parse("green"));
+        ctx.Status($"Processing ...");
+
+        var answer = await thread.InvokeAsync(prompt).ConfigureAwait(true);
+
+        AnsiConsole.MarkupLine($"[cyan]Copilot > {answer.Content!}\n[/]");
+    });
 }

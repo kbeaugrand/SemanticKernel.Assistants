@@ -159,7 +159,7 @@ public class Thread : IThread
                                 .GetChatMessageContentAsync(chatHistory, executionSettings: this._openAIPromptExecutionSettings)
                                 .ConfigureAwait(false);
 
-        return agentAnswer.Content;
+        return agentAnswer.Content!;
     }
 
     /// <summary>
@@ -182,7 +182,7 @@ public class Thread : IThread
 
         var chatResult = await this._agent.ChatCompletion.GetChatMessageContentAsync(chat).ConfigureAwait(false);
 
-        return chatResult.Content;
+        return chatResult.Content!;
     }
 
     /// <summary>
@@ -207,6 +207,7 @@ public class Thread : IThread
     {
         var goal = $"{this._agent.Instructions}\n" +
                             $"Given the following context, accomplish the user intent.\n" +
+                            $"## User intent\n" +
                             $"{userIntent}";
 
         switch (this._agent.Planner.ToLower())
@@ -248,13 +249,14 @@ public class Thread : IThread
             {
                 // If we get an error, try again
                 lastError = e;
+
                 this._logger.LogWarning(e.Message);
             }
             maxTries--;
         }
 
         this._logger.LogError(lastError!, lastError!.Message);
-        this._logger.LogError(lastPlan!.ToString());
+        this._logger.LogError(lastPlan?.ToString());
 
         throw lastError;
     }
