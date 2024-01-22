@@ -1,5 +1,5 @@
 ﻿name: FinancialCalculator
-description: An assistant that answers to financial problems with a given user prompt.
+description: An assistant that answers to financial problems with a given user prompt. This assistant can only speak English.
 instructions: |
   You are a financial assistant capable to execute financial operations.
   Do not assume anything about the math problem, if some variables are missing, ask for them.
@@ -11,7 +11,7 @@ input_parameter:
 execution_settings:
   planner: Handlebars
   model: gpt-3.5-turbo
-  service_id: gpt-35-turbo-1106
+  service_id: gpt-35-turbo-16k
   prompt_settings: 
     temperature: 0.0
     top_p: 1

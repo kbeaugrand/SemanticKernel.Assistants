@@ -19,7 +19,7 @@ internal static class KernelExtensions
     /// <param name="model">The <see cref="AgentAssistantModel"/> instance.</param>
     public static void ImportPluginFromAgent(this Kernel kernel, IAssistant agent, IAssistant otherAssistant)
     {
-        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!, functions: new[] 
+        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!, functions: new[]
         {
             KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
             {
@@ -36,7 +36,6 @@ internal static class KernelExtensions
             parameters: new[]
             {
                 new KernelParameterMetadata("input")
-
                 {
                     IsRequired = true,
                     ParameterType = typeof(string),
@@ -49,7 +48,6 @@ internal static class KernelExtensions
                 Description = "The response from the assistant."
             },
             loggerFactory: kernel.LoggerFactory)
-
         });
 
         kernel.Plugins.Add(agentConversationPlugin);

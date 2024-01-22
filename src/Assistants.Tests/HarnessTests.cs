@@ -118,30 +118,30 @@ public class HarnessTests
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
 
-        var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
-                azureOpenAIEndpoint,
-                azureOpenAIKey,
+        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
                 new[] {
                     KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
                 },
-                loggerFactory: this._loggerFactory);
+                loggerFactory: this._loggerFactory)
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build();
 
-        var financial = Assistant.FromTemplate("./Assistants/FinancialCalculator.yaml",
-            azureOpenAIEndpoint,
-            azureOpenAIKey,
+        var financial = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml",
             new[] {
                         KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
             },
-            loggerFactory: this._loggerFactory);
+            loggerFactory: this._loggerFactory)
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build();
 
-        var butler = Assistant.FromTemplate("./Assistants/Butler.yaml",
-                           azureOpenAIEndpoint,
-                           azureOpenAIKey,
+        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
                            assistants: new[] {
                                mathematician,
                                financial
                            },
-                           loggerFactory: this._loggerFactory);
+                           loggerFactory: this._loggerFactory)
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build();
 
         var thread = butler.CreateThread();
         var question = "If I start with $25,000 in the stock market and leave it to grow for 20 years at a 5% annual interest rate, how much would I have?";
@@ -175,10 +175,10 @@ public class HarnessTests
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
 
-        var verifier = Assistant.FromTemplate("./Assistants/Auditor.yaml",
-                  azureOpenAIEndpoint,
-                  azureOpenAIKey,
-                  loggerFactory: this._loggerFactory);
+        var verifier = AssistantBuilder.FromTemplate("./Assistants/Auditor.yaml",
+                  loggerFactory: this._loggerFactory)
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build();
 
         var result = await verifier.CreateThread()
             .InvokeAsync(
@@ -202,16 +202,16 @@ public class HarnessTests
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
 
-        var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
-                azureOpenAIEndpoint,
-                azureOpenAIKey,
+        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
                 new[] {
                     KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-                });
+                })
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build();
 
-        var butler = Assistant.FromTemplate("./Assistants/Butler.yaml",
-                           azureOpenAIEndpoint,
-                           azureOpenAIKey);
+        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
+            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+            .Build(); ;
 
         var logger = this._loggerFactory.CreateLogger("Tests");
 

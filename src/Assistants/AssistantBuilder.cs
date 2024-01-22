@@ -4,11 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.Assistants.Extensions;
 using SemanticKernel.Assistants.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using YamlDotNet.Serialization;
 
 namespace SemanticKernel.Assistants;
 
@@ -17,11 +18,6 @@ namespace SemanticKernel.Assistants;
 /// </summary>
 public partial class AssistantBuilder
 {
-    /// <summary>
-    /// The agent model.
-    /// </summary>
-    private readonly AssistantModel _model;
-
     /// <summary>
     /// The agent's assistants.
     /// </summary>
@@ -40,16 +36,26 @@ public partial class AssistantBuilder
     /// <summary>
     /// The kernel builder.
     /// </summary>
-    private readonly IKernelBuilder _kernelBuilder;
+    internal IKernelBuilder KernelBuilder { get; }
+
+    /// <summary>
+    /// The agent model.
+    /// </summary>
+    internal AssistantModel Model { get; private set; }
+
+    /// <summary>
+    /// The AI services configuration.
+    /// </summary>
+    internal Action<IKernelBuilder> ConfigureAIServices { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
     /// </summary>
     public AssistantBuilder()
     {
-        this._model = new AssistantModel();
+        this.Model = new AssistantModel();
         this._assistants = new List<IAssistant>();
-        this._kernelBuilder = Kernel.CreateBuilder();
+        this.KernelBuilder = Kernel.CreateBuilder();
         this._plugins = new List<KernelPlugin>();
     }
 
@@ -60,9 +66,21 @@ public partial class AssistantBuilder
     /// <exception cref="KernelException"></exception>
     public IAssistant Build()
     {
-        var kernel = this._kernelBuilder.Build();
+        if (this.Model.ExecutionSettings.Model is null)
+        {
+            throw new KernelException("The agent's model is not defined.");
+        }
 
-        var agent = new Assistant(this._model, kernel);
+        if (this.ConfigureAIServices is null)
+        {
+            throw new KernelException("The AI services are not configured.");
+        }
+
+        this.ConfigureAIServices!(this.KernelBuilder);
+
+        var kernel = this.KernelBuilder.Build();
+
+        var agent = new Assistant(this.Model, kernel);
 
         foreach (var item in this._plugins)
         {
@@ -84,7 +102,7 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithName(string name)
     {
-        this._model.Name = name;
+        this.Model.Name = name;
         return this;
     }
 
@@ -95,7 +113,7 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithDescription(string description)
     {
-        this._model.Description = description;
+        this.Model.Description = description;
         return this;
     }
 
@@ -106,7 +124,7 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithInstructions(string instructions)
     {
-        this._model.Instructions = instructions;
+        this.Model.Instructions = instructions;
         return this;
     }
 
@@ -116,11 +134,24 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithAzureOpenAIChatCompletion(string deploymentName, string model, string endpoint, string apiKey)
     {
-        this._model.ExecutionSettings.ServiceId = deploymentName;
-        this._model.ExecutionSettings.Model = model;
+        this.Model.ExecutionSettings.ServiceId = deploymentName;
+        this.Model.ExecutionSettings.Model = model;
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName: deploymentName, endpoint: endpoint, apiKey: apiKey, modelId: model);
-        this._kernelBuilder.AddAzureOpenAITextGeneration(deploymentName: deploymentName, endpoint: endpoint, apiKey: apiKey, modelId: model);
+        return this.WithAzureOpenAIChatCompletion(endpoint, apiKey);
+    }
+
+    /// <summary>
+    /// Define the Azure OpenAI chat completion service (required).
+    /// </summary>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
+    public AssistantBuilder WithAzureOpenAIChatCompletion(string endpoint, string apiKey)
+    {
+        this.ConfigureAIServices = (builder) =>
+        {
+            builder.AddAzureOpenAIChatCompletion(endpoint: endpoint, apiKey: apiKey, modelId: this.Model.ExecutionSettings.Model!, deploymentName: this.Model.ExecutionSettings.ServiceId!);
+            builder.AddAzureOpenAITextGeneration(endpoint: endpoint, apiKey: apiKey, modelId: this.Model.ExecutionSettings.Model!, deploymentName: this.Model.ExecutionSettings.ServiceId!);
+        };
+
         return this;
     }
 
@@ -154,7 +185,7 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithPlanner(string plannerName)
     {
-        this._model.ExecutionSettings.Planner = plannerName;
+        this.Model.ExecutionSettings.Planner = plannerName;
         return this;
     }
 
@@ -165,7 +196,7 @@ public partial class AssistantBuilder
     public AssistantBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     {
         this._loggerFactory = loggerFactory;
-        this._kernelBuilder.Services.AddSingleton(loggerFactory);
+        this.KernelBuilder.Services.AddSingleton(loggerFactory);
 
         return this;
     }
@@ -177,7 +208,7 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithExecutionSettings(AssistantPromptExecutionSettings executionSettings)
     {
-        this._model.ExecutionSettings.PromptExecutionSettings = executionSettings;
+        this.Model.ExecutionSettings.PromptExecutionSettings = executionSettings;
 
         return this;
     }
@@ -189,11 +220,57 @@ public partial class AssistantBuilder
     /// <returns></returns>
     public AssistantBuilder WithInputParameter(string description, string defaultValue = "")
     {
-        this._model.Input = new AssistantInputParameter
+        this.Model.Input = new AssistantInputParameter
         {
             DefaultValue = defaultValue,
             Description = description,
         };
         return this;
+    }
+
+    /// <summary>
+    /// Creates a new agent builder from a yaml template.
+    /// </summary>
+    /// <param name="definitionPath">The yaml definition file path.</param>
+    /// <param name="plugins">The plugins.</param>
+    /// <param name="assistants">The assistants.</param>
+    /// <param name="loggerFactory">The logger factory instance.</param>
+    /// <returns></returns>
+    public static AssistantBuilder FromTemplate(
+        string definitionPath,
+        IEnumerable<KernelPlugin>? plugins = null,
+        ILoggerFactory? loggerFactory = null,
+        params IAssistant[] assistants)
+    {
+        var deserializer = new DeserializerBuilder().Build();
+        var yamlContent = File.ReadAllText(definitionPath);
+
+        var agentModel = deserializer.Deserialize<AssistantModel>(yamlContent);
+
+        var agentBuilder = new AssistantBuilder();
+        agentBuilder.Model = agentModel;
+
+        if (plugins is not null)
+        {
+            foreach (var plugin in plugins)
+            {
+                agentBuilder.WithPlugin(plugin);
+            }
+        }
+
+        if (assistants is not null)
+        {
+            foreach (var assistant in assistants)
+            {
+                agentBuilder.WithAssistant(assistant);
+            }
+        }
+
+        if (loggerFactory is not null)
+        {
+            agentBuilder.WithLoggerFactory(loggerFactory);
+        }
+
+        return agentBuilder;
     }
 }
