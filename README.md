@@ -42,7 +42,7 @@ proprietary data.
 To install this memory store, you need to add the required nuget package to your project:
 
 ```dotnetcli
-dotnet add package SemanticKernel.Assistants --version 1.0.0-rc4
+dotnet add package SemanticKernel.Assistants --version 1.1.1-preview
 ```
 
 ## Usage
@@ -72,16 +72,16 @@ dotnet add package SemanticKernel.Assistants --version 1.0.0-rc4
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
-   string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
+    string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
 
-    var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
-        azureOpenAIEndpoint,
-        azureOpenAIKey,
+    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
         plugins: new List<IKernelPlugin>()
         {
            KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        });
+        })
+        .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        .Build();
    ```
 3. Create a new conversation thread with your assistant.
    ```csharp

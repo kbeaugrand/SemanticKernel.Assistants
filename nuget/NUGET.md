@@ -39,14 +39,13 @@ It provides different scenarios for the usage of assistants such as:
     string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
 
-    var mathematician = Assistant.FromTemplate("./Assistants/Mathematician.yaml",
-        azureOpenAIEndpoint,
-        azureOpenAIKey,
+    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
         plugins: new List<IKernelPlugin>()
-        {3. Create a new conversation thread with your assistant.
-
+        {
            KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        });
+        })
+        .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        .Build();
    ```
    ```csharp
    var thread = mathematician.CreateThread();
