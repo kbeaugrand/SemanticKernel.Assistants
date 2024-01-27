@@ -33,6 +33,6 @@ jobs:
       working-directory: ./src/${{ matrix.package }}/
     - name: Push to NuGet
       run: |
-        dotnet nuget push **/${{ matrix.package }}.nupkg --source nuget.org --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+        dotnet nuget push **/*.nupkg --source nuget.org --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
       working-directory: ./src/${{ matrix.package }}/
     
