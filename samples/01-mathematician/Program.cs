@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
+using SemanticKernel.Assistants.Ollama;
 using Spectre.Console;
 
 var configuration = new ConfigurationBuilder()
@@ -40,15 +41,21 @@ AnsiConsole.Status().Start("Initializing...", ctx =>
         {
             KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
         }, loggerFactory: loggerFactory)
-                .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-                .Build(); ;
+                //.WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                .WithOllamaChatCompletion(ollamaEndpoint, client => { 
+                    client.Timeout = TimeSpan.FromMinutes(5);
+                })
+                .Build();
 
     assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
            assistants: new IAssistant[]
            {
                 financialCalculator
            }, loggerFactory: loggerFactory)
-                .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                //.WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                .WithOllamaChatCompletion(ollamaEndpoint, client => {
+                    client.Timeout = TimeSpan.FromMinutes(5);
+                })
                 .Build();
 });
 
