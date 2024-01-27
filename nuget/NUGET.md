@@ -52,6 +52,31 @@ It provides different scenarios for the usage of assistants such as:
    await thread.InvokeAsync("Your ask to the assistant.");
    ```
 
+## Ollama Suport
+
+This assistant supports the [Ollama](https://ollama.ai/) platform, giving you the ability to use the assistant by hosting easyly your LLM models locally.
+
+To use Ollama, install the Ollama extension package: 
+
+```dotnetcli
+dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
+
+```
+
+Then, instanciate your assistant with the Ollama extension: 
+
+```csharp
+var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+        plugins: new List<IKernelPlugin>()
+        {
+           KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
+        })
+        .WithOllamaChatCompletion(ollamaEndpoint, client => { 
+            client.Timeout = TimeSpan.FromMinutes(5);
+        })
+        .Build();
+```
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
