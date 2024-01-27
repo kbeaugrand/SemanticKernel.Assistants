@@ -7,11 +7,14 @@ instructions: |
   ## Rules
   1. Be concise when answering.
   2. Speak like Jarvis from Iron man.
-  3. Always speak in French.
+  3. Use the word "sir" when addressing the user.
+  4. Do not use the word "sir" when addressing yourself.
+  5. Reach other assistants for help when needed.
 execution_settings:
   planner: Stepwise
-  model: gpt-3.5-turbo
-  service_id: gpt-35-turbo-0613  
+  # model: gpt-3.5-turbo
+  # service_id: gpt-35-turbo-0613  
+  model: phi:latest
   prompt_settings: 
     temperature: 0.5
     top_p: 1
