@@ -10,6 +10,11 @@ on:
 jobs:
   Publish: 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: 
+        - Assistants
+        - Assistants.Ollama
     
     steps:
     - uses: actions/checkout@v4
@@ -19,15 +24,15 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: ./src/Assistants/
+      working-directory: ./src/${{ matrix.version }}/
     - name: Build
       run: dotnet build --no-restore --configuration Release
-      working-directory: ./src/Assistants/
+      working-directory: ./src/${{ matrix.version }}/
     - name: Pack
       run: dotnet pack --configuration Release /p:Version=${{ github.event.release.tag_name }}
-      working-directory: ./src/Assistants/
+      working-directory: ./src/${{ matrix.version }}/
     - name: Push to NuGet
       run: |
         dotnet nuget push **/*.nupkg --source nuget.org --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-      working-directory: ./src/Assistants/
+      working-directory: ./src/${{ matrix.version }}/
     
