@@ -24,29 +24,14 @@ public partial class AssistantBuilder
     private readonly List<IAssistant> _assistants;
 
     /// <summary>
-    /// The agent's plugins.
-    /// </summary>
-    private readonly List<KernelPlugin> _plugins;
-
-    /// <summary>
-    /// The logger factory.
-    /// </summary>
-    private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
-
-    /// <summary>
     /// The kernel builder.
     /// </summary>
-    internal IKernelBuilder KernelBuilder { get; }
+    internal Kernel? Kernel { get; private set; }
 
     /// <summary>
     /// The agent model.
     /// </summary>
     internal AssistantModel Model { get; private set; }
-
-    /// <summary>
-    /// The AI services configuration.
-    /// </summary>
-    internal Action<IKernelBuilder> ConfigureAIServices { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
@@ -55,8 +40,6 @@ public partial class AssistantBuilder
     {
         this.Model = new AssistantModel();
         this._assistants = new List<IAssistant>();
-        this.KernelBuilder = Kernel.CreateBuilder();
-        this._plugins = new List<KernelPlugin>();
     }
 
     /// <summary>
@@ -66,30 +49,16 @@ public partial class AssistantBuilder
     /// <exception cref="KernelException"></exception>
     public IAssistant Build()
     {
-        if (this.Model.ExecutionSettings.Model is null)
+        if (this.Kernel is null)
         {
-            throw new KernelException("The agent's model is not defined.");
+            throw new KernelException("The Kernel is not configured.");
         }
 
-        if (this.ConfigureAIServices is null)
-        {
-            throw new KernelException("The AI services are not configured.");
-        }
-
-        this.ConfigureAIServices!(this.KernelBuilder);
-
-        var kernel = this.KernelBuilder.Build();
-
-        var agent = new Assistant(this.Model, kernel);
-
-        foreach (var item in this._plugins)
-        {
-            kernel.Plugins.Add(item);
-        }
+        var agent = new Assistant(this.Model, this.Kernel);
 
         foreach (var item in this._assistants)
         {
-            kernel.ImportPluginFromAgent(agent, item);
+            this.Kernel.ImportPluginFromAgent(agent, item);
         }
 
         return agent;
@@ -129,44 +98,6 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
-    /// Define the Azure OpenAI chat completion service (required).
-    /// </summary>
-    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithAzureOpenAIChatCompletion(string deploymentName, string model, string endpoint, string apiKey)
-    {
-        this.Model.ExecutionSettings.ServiceId = deploymentName;
-        this.Model.ExecutionSettings.Model = model;
-
-        return this.WithAzureOpenAIChatCompletion(endpoint, apiKey);
-    }
-
-    /// <summary>
-    /// Define the Azure OpenAI chat completion service (required).
-    /// </summary>
-    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithAzureOpenAIChatCompletion(string endpoint, string apiKey)
-    {
-        this.ConfigureAIServices = (builder) =>
-        {
-            builder.AddAzureOpenAIChatCompletion(endpoint: endpoint, apiKey: apiKey, modelId: this.Model.ExecutionSettings.Model!, deploymentName: this.Model.ExecutionSettings.ServiceId!);
-            builder.AddAzureOpenAITextGeneration(endpoint: endpoint, apiKey: apiKey, modelId: this.Model.ExecutionSettings.Model!, deploymentName: this.Model.ExecutionSettings.ServiceId!);
-        };
-
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a plugin to the agent.
-    /// </summary>
-    /// <param name="plugin"></param>
-    /// <returns></returns>
-    public AssistantBuilder WithPlugin(KernelPlugin plugin)
-    {
-        this._plugins.Add(plugin);
-        return this;
-    }
-
-    /// <summary>
     /// Adds the agent's collaborative assistant.
     /// </summary>
     /// <param name="assistant">The assistant.</param>
@@ -186,18 +117,6 @@ public partial class AssistantBuilder
     public AssistantBuilder WithPlanner(string plannerName)
     {
         this.Model.ExecutionSettings.Planner = plannerName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the logger factory to use.
-    /// </summary>
-    /// <param name="loggerFactory">The logger factory.</param>
-    public AssistantBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
-    {
-        this._loggerFactory = loggerFactory;
-        this.KernelBuilder.Services.AddSingleton(loggerFactory);
-
         return this;
     }
 
@@ -229,17 +148,24 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
+    /// Defines the agent's kernel.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <returns></returns>
+    public AssistantBuilder WithKernel(Kernel kernel)
+    {
+        this.Kernel = kernel;
+        return this;
+    }
+
+    /// <summary>
     /// Creates a new agent builder from a yaml template.
     /// </summary>
     /// <param name="definitionPath">The yaml definition file path.</param>
-    /// <param name="plugins">The plugins.</param>
     /// <param name="assistants">The assistants.</param>
-    /// <param name="loggerFactory">The logger factory instance.</param>
     /// <returns></returns>
     public static AssistantBuilder FromTemplate(
         string definitionPath,
-        IEnumerable<KernelPlugin>? plugins = null,
-        ILoggerFactory? loggerFactory = null,
         params IAssistant[] assistants)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -250,25 +176,12 @@ public partial class AssistantBuilder
         var agentBuilder = new AssistantBuilder();
         agentBuilder.Model = agentModel;
 
-        if (plugins is not null)
-        {
-            foreach (var plugin in plugins)
-            {
-                agentBuilder.WithPlugin(plugin);
-            }
-        }
-
         if (assistants is not null)
         {
             foreach (var assistant in assistants)
             {
                 agentBuilder.WithAssistant(assistant);
             }
-        }
-
-        if (loggerFactory is not null)
-        {
-            agentBuilder.WithLoggerFactory(loggerFactory);
         }
 
         return agentBuilder;

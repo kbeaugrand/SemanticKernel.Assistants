@@ -13,10 +13,10 @@ namespace SemanticKernel.Assistants.Ollama
         {
             assistant.ConfigureAIServices = (builder) =>
             {
-                assistant.KernelBuilder.Services.AddHttpClient<HttpClient>();
+                assistant.Kernel.Services.AddHttpClient<HttpClient>();
 
-                assistant.KernelBuilder.AddOllamaChatCompletion(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
-                assistant.KernelBuilder.AddOllamaTextGeneration(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
+                assistant.Kernel.AddOllamaChatCompletion(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
+                assistant.Kernel.AddOllamaTextGeneration(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
             };
 
             return assistant;
@@ -30,10 +30,10 @@ namespace SemanticKernel.Assistants.Ollama
         {
             assistant.ConfigureAIServices = (builder) =>
             {
-                assistant.KernelBuilder.Services.AddHttpClient(assistant.Model.Name!, httpClientOptions);
+                assistant.Kernel.Services.AddHttpClient(assistant.Model.Name!, httpClientOptions);
 
-                assistant.KernelBuilder.AddOllamaChatCompletion(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
-                assistant.KernelBuilder.AddOllamaTextGeneration(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
+                assistant.Kernel.AddOllamaChatCompletion(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
+                assistant.Kernel.AddOllamaTextGeneration(baseUrl: endpoint, modelId: assistant.Model.ExecutionSettings.Model!, serviceId: assistant.Model.ExecutionSettings.ServiceId!);
             };
 
             return assistant;

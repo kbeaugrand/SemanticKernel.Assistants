@@ -44,8 +44,9 @@ public class HarnessTests
                             .WithName("poet")
                             .WithDescription("An assistant that create sonnet poems.")
                             .WithInstructions("You are a poet that composes poems based on user input.\nCompose a sonnet inspired by the user input.")
-                            .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                            .WithLoggerFactory(this._loggerFactory)
+                            .WithKernel(Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build())
                             .Build();
 
         var thread = assistant.CreateThread();
@@ -62,15 +63,19 @@ public class HarnessTests
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
         string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
+        var mathKernel = Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build();
+
+        mathKernel.ImportPluginFromObject(new MathPlugin());
+
         var mathematician = new AssistantBuilder()
                             .WithName("mathematician")
                             .WithDescription("An assistant that answers math problems.")
                             .WithInstructions("You are a mathematician.\n" +
                                               "No need to show your work, just give the answer to the math problem.\n" +
                                               "Use calculation results.")
-                            .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                            .WithPlugin(KernelPluginFactory.CreateFromObject(new MathPlugin(), "math"))
-                            .WithLoggerFactory(this._loggerFactory)
+                            .WithKernel(mathKernel)
                             .Build();
 
         var thread = mathematician.CreateThread();
@@ -85,25 +90,30 @@ public class HarnessTests
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
         string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
+        var mathKernel = Kernel.CreateBuilder()
+                                       .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                       .Build();
+
+        mathKernel.ImportPluginFromObject(new MathPlugin());
+
         var mathematician = new AssistantBuilder()
                             .WithName("mathematician")
                             .WithDescription("An assistant that answers math problems with a given user prompt.")
                             .WithInstructions("You are a mathematician.\n" +
                                               "No need to show your work, just give the answer to the math problem.\n" +
                                               "Use calculation results.")
-                            .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                            .WithPlugin(KernelPluginFactory.CreateFromObject(new MathPlugin(), "math"))
+                            .WithKernel(mathKernel)
                             .WithInputParameter("The word mathematics problem to solve in 2-3 sentences.\n" +
                                                 "Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.")
-                            .WithLoggerFactory(this._loggerFactory)
                             .Build();
 
         var butler = new AssistantBuilder()
                     .WithName("alfred")
                     .WithDescription("An AI butler that helps humans.")
                     .WithInstructions("Act as a butler.\nNo need to explain further the internal process.\nBe concise when answering.")
-                    .WithAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                    .WithLoggerFactory(this._loggerFactory)
+                    .WithKernel(Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build())
                     .WithAssistant(mathematician)
                     .Build();
 
@@ -117,30 +127,30 @@ public class HarnessTests
     {
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
+        string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
-        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-                new[] {
-                    KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
-                },
-                loggerFactory: this._loggerFactory)
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        var financialKernel = Kernel.CreateBuilder()
+                                       .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                       .Build();
+
+        financialKernel.ImportPluginFromObject(new FinancialPlugin());
+
+        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml")
+            .WithKernel(financialKernel)
             .Build();
 
-        var financial = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml",
-            new[] {
-                        KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
-            },
-            loggerFactory: this._loggerFactory)
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        var financial = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml")
+            .WithKernel(financialKernel)
             .Build();
 
         var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
                            assistants: new[] {
                                mathematician,
                                financial
-                           },
-                           loggerFactory: this._loggerFactory)
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+                           })
+            .WithKernel(Kernel.CreateBuilder()
+                              .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                              .Build())
             .Build();
 
         var thread = butler.CreateThread();
@@ -174,10 +184,12 @@ public class HarnessTests
     {
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
+        string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
-        var verifier = AssistantBuilder.FromTemplate("./Assistants/Auditor.yaml",
-                  loggerFactory: this._loggerFactory)
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        var verifier = AssistantBuilder.FromTemplate("./Assistants/Auditor.yaml")
+            .WithKernel(Kernel.CreateBuilder()
+                              .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                              .Build())
             .Build();
 
         var result = await verifier.CreateThread()
@@ -201,17 +213,23 @@ public class HarnessTests
     {
         string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
         string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
+        string azureOpenAIChatCompletionDeployment = TestConfig.AzureOpenAIDeploymentName;
 
-        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-                new[] {
-                    KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-                })
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
+        var mathematicianKernel = Kernel.CreateBuilder()
+                               .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                               .Build();
+
+        mathematicianKernel.ImportPluginFromObject(new MathPlugin());
+
+        var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml")
+            .WithKernel(mathematicianKernel)
             .Build();
 
         var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
-            .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-            .Build(); ;
+            .WithKernel(Kernel.CreateBuilder()
+                              .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                              .Build())
+            .Build();
 
         var logger = this._loggerFactory.CreateLogger("Tests");
 

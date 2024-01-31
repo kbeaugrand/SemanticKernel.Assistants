@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
-using SemanticKernel.Assistants.Ollama;
 using Spectre.Console;
 
 var configuration = new ConfigurationBuilder()
@@ -31,32 +30,32 @@ IAssistant assistant = null!;
 
 AnsiConsole.Status().Start("Initializing...", ctx =>
 {
-
     string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
+    string azureOpenAIDeploymentName = configuration["AzureOpenAIGPT35Endpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
     string ollamaEndpoint = configuration["OllamaEndpoint"]!;
 
-    var financialCalculator = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml",
-        plugins: new List<KernelPlugin>()
-        {
-            KernelPluginFactory.CreateFromObject(new FinancialPlugin(), "financial")
-        }, loggerFactory: loggerFactory)
-                //.WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-                .WithOllamaChatCompletion(ollamaEndpoint, client => { 
-                    client.Timeout = TimeSpan.FromMinutes(5);
-                })
-                .Build();
+    var financialKernel = Kernel.CreateBuilder()
+                    .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                    .Build();
+
+    financialKernel.CreatePluginFromObject(new FinancialPlugin(), "financial");
+
+    var butlerKernel = Kernel.CreateBuilder()
+                    .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                    .Build();
+
+    var financialCalculator = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml")
+        .WithKernel(financialKernel)
+                    .Build();
 
     assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
            assistants: new IAssistant[]
            {
                 financialCalculator
-           }, loggerFactory: loggerFactory)
-                //.WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-                .WithOllamaChatCompletion(ollamaEndpoint, client => {
-                    client.Timeout = TimeSpan.FromMinutes(5);
-                })
-                .Build();
+           })
+        .WithKernel(butlerKernel)
+        .Build();
 });
 
 var thread = assistant.CreateThread();

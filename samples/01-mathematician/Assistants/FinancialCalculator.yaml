@@ -10,9 +10,6 @@ input_parameter:
       Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.
 execution_settings:
   planner: Handlebars
-  # model: gpt-3.5-turbo
-  # service_id: gpt-35-turbo-16k
-  model: llama2:7b-chat-q2_K
   prompt_settings: 
     temperature: 0.0
     top_p: 1
