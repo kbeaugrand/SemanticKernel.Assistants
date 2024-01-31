@@ -10,9 +10,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Assistants.RoomThread;
+namespace SemanticKernel.Assistants.GroupThread;
 
-internal class RoomThread : IRoomThread
+internal class GroupThread : IGroupThread
 {
     public IReadOnlyList<ChatMessageContent> ChatMessages => throw new NotImplementedException();
 
@@ -20,12 +20,12 @@ internal class RoomThread : IRoomThread
 
     public event EventHandler<ChatMessageContent>? OnMessageReceived;
 
-    internal RoomThread(IEnumerable<IAssistant> agents)
+    internal GroupThread(IEnumerable<IAssistant> agents)
     {
         this._assistantThreads = agents.ToDictionary(agent => agent, agent =>
         {
             var thread = agent.CreateThread();
-            thread.AddSystemMessage(this.GetRoomInstructions()(new
+            thread.AddSystemMessage(this.GetInstructions()(new
             {
                 agent,
                 participants = agents
@@ -71,9 +71,9 @@ internal class RoomThread : IRoomThread
                      })).ConfigureAwait(false);
     }
 
-    private HandlebarsTemplate<object, object> GetRoomInstructions()
+    private HandlebarsTemplate<object, object> GetInstructions()
     {
-        var roomInstructionTemplate = this.ReadManifestResource("RoomMeetingInstructions.handlebars");
+        var roomInstructionTemplate = this.ReadManifestResource("GroupThreadInstructions.handlebars");
 
         IHandlebars handlebarsInstance = Handlebars.Create(
            new HandlebarsConfiguration
@@ -88,7 +88,7 @@ internal class RoomThread : IRoomThread
 
     private string ReadManifestResource(string resourceName)
     {
-        var promptStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{typeof(RoomThread).Namespace}.{resourceName}")!;
+        var promptStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{typeof(GroupThread).Namespace}.{resourceName}")!;
 
         using var reader = new StreamReader(promptStream);
 

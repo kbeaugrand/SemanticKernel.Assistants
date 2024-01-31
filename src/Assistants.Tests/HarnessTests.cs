@@ -233,7 +233,7 @@ public class HarnessTests
 
         var logger = this._loggerFactory.CreateLogger("Tests");
 
-        var thread = Assistant.CreateRoomThread(butler, mathematician);
+        var thread = Assistant.CreateGroupThread(butler, mathematician);
 
         thread.OnMessageReceived += (object? sender, ChatMessageContent message) =>
         {
