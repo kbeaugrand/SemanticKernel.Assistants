@@ -25,21 +25,21 @@
 
   <ItemGroup>
     <PackageReference Include="Handlebars.Net" />
-    <PackageReference Include="Microsoft.Extensions.Configuration"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.SemanticKernel"  />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions"  />
-    <PackageReference Include="Microsoft.SemanticKernel.Core"  />
-    <PackageReference Include="Microsoft.SemanticKernel.Planners.Handlebars"  />
-    <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI"  />
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.Handlebars" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" />
     <PackageReference Include="xunit.extensibility.execution" />
-    <PackageReference Include="YamlDotNet"  />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="RoomMeetingInstructions.handlebars" />
-    <EmbeddedResource Include="RoomThread\RoomMeetingInstructions.handlebars" />
+    <EmbeddedResource Include="GroupThread\GroupThreadInstructions.handlebars" />
   </ItemGroup>  
 
 </Project>

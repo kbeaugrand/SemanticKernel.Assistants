@@ -4,12 +4,12 @@ using Microsoft.SemanticKernel;
 using System;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Assistants.RoomThread;
+namespace SemanticKernel.Assistants.GroupThread;
 
 /// <summary>
 /// Interface representing a room thread.
 /// </summary>
-public interface IRoomThread
+public interface IGroupThread
 {
     /// <summary>
     /// Adds the user message to the discussion.

@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using SemanticKernel.Assistants.GroupThread;
 using SemanticKernel.Assistants.Models;
-using SemanticKernel.Assistants.RoomThread;
 using System.Collections.Generic;
-using System.IO;
-using YamlDotNet.Serialization;
 
 namespace SemanticKernel.Assistants;
 
@@ -89,9 +86,9 @@ public sealed class Assistant : IAssistant
     /// </summary>
     /// <param name="agents">The collaborative agents.</param>
     /// <returns></returns>
-    public static IRoomThread CreateRoomThread(params IAssistant[] agents)
+    public static IGroupThread CreateGroupThread(params IAssistant[] agents)
     {
-        return new RoomThread.RoomThread(agents);
+        return new GroupThread.GroupThread(agents);
     }
 
     /// <summary>
