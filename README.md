@@ -63,8 +63,6 @@ dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
           Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.
     execution_settings:
       planner: Handlebars
-      model: gpt-3.5-turbo
-      service_id: gpt-35-turbo-1106
       prompt_settings: 
         temperature: 0.0
         top_p: 1
@@ -72,47 +70,25 @@ dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
+    string azureOpenAIChatCompletionDeployment = configuration["AzureOpenAIDeploymentName"]!;
     string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
+ 
+    var mathKernel = Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build();
 
-    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-        plugins: new List<IKernelPlugin>()
-        {
-           KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        })
-        .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-        .Build();
+    mathKernel.ImportPluginFromObject(new MathPlugin());
+
+    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml")
+                                        .WithKernel(mathKernel)
+                                        .Build();
    ```
 3. Create a new conversation thread with your assistant.
    ```csharp
    var thread = mathematician.CreateThread();
    await thread.InvokeAsync("Your ask to the assistant.");
    ```
-
-## Ollama Suport
-
-This assistant supports the [Ollama](https://ollama.ai/) platform, giving you the ability to use the assistant by hosting easyly your LLM models locally.
-
-To use Ollama, install the Ollama extension package: 
-
-```dotnetcli
-dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
-
-```
-
-Then, instanciate your assistant with the Ollama extension: 
-
-```csharp
-var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-        plugins: new List<IKernelPlugin>()
-        {
-           KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        })
-        .WithOllamaChatCompletion(ollamaEndpoint, client => { 
-            client.Timeout = TimeSpan.FromMinutes(5);
-        })
-        .Build();
-```
 
 ## License
 
