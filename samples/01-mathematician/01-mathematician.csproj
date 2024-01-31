@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Assistants.Ollama\SemanticKernel.Assistants.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Assistants\SemanticKernel.Assistants.csproj" />
   </ItemGroup>
 

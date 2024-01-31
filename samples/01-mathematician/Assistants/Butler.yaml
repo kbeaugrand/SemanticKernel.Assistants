@@ -12,9 +12,6 @@ instructions: |
   5. Reach other assistants for help when needed.
 execution_settings:
   planner: Stepwise
-  # model: gpt-3.5-turbo
-  # service_id: gpt-35-turbo-0613  
-  model: phi:latest
   prompt_settings: 
     temperature: 0.5
     top_p: 1

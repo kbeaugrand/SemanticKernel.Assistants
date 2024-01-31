@@ -9,12 +9,6 @@ internal class AssistantExecutionSettings
     [YamlMember(Alias = "planner")]
     public string? Planner { get; set; }
 
-    [YamlMember(Alias = "model")]
-    public string? Model { get; set; }
-
-    [YamlMember(Alias = "service_id")]
-    public string? ServiceId { get; set; }
-
     [YamlMember(Alias = "past_messages_included")]
     public int PastMessagesIncluded { get; set; } = 10;
 
