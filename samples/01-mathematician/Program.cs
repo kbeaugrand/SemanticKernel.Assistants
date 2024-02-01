@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
+using SemanticKernel.Assistants.Extensions;
 using Spectre.Console;
 
 var configuration = new ConfigurationBuilder()
@@ -39,21 +40,19 @@ AnsiConsole.Status().Start("Initializing...", ctx =>
                     .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
                     .Build();
 
-    financialKernel.CreatePluginFromObject(new FinancialPlugin(), "financial");
-
-    var butlerKernel = Kernel.CreateBuilder()
-                    .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
-                    .Build();
+    financialKernel.ImportPluginFromObject(new FinancialPlugin(), "financial");
 
     var financialCalculator = AssistantBuilder.FromTemplate("./Assistants/FinancialCalculator.yaml")
-        .WithKernel(financialKernel)
-                    .Build();
+                                                .WithKernel(financialKernel)
+                                                .Build();
 
-    assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
-           assistants: new IAssistant[]
-           {
-                financialCalculator
-           })
+    var butlerKernel = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                            .Build();
+
+    butlerKernel.ImportPluginFromAssistant(financialCalculator);
+
+    assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
         .WithKernel(butlerKernel)
         .Build();
 });

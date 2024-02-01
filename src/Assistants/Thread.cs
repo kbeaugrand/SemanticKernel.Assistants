@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
+using SemanticKernel.Assistants.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +50,7 @@ public class Thread : IThread
     /// <summary>
     /// The arguments to pass to the agent.
     /// </summary>
-    private readonly Dictionary<string, object?> _arguments;
+    private Dictionary<string, object?> _arguments;
 
     /// <summary>
     /// The name of the caller.
@@ -65,15 +66,13 @@ public class Thread : IThread
     /// Initializes a new instance of the <see cref="Thread"/> class.
     /// </summary>
     /// <param name="agent">The agent.</param>
-    /// <param name="callerName">The caller name.</param>
     /// <param name="arguments">The arguments to pass.</param>
     internal Thread(IAssistant agent,
-        string callerName = "User",
         Dictionary<string, object?> arguments = null)
     {
         this._logger = agent.Kernel.LoggerFactory.CreateLogger<Thread>();
         this._agent = agent;
-        this._callerName = callerName;
+        this._callerName = "User";
         this._arguments = arguments ?? new Dictionary<string, object?>();
         this._chatHistory = new ChatHistory(this._agent.Description!);
 
@@ -86,7 +85,7 @@ public class Thread : IThread
             FrequencyPenalty = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.FrequencyPenalty,
             PresencePenalty = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.PresencePenalty,
             MaxTokens = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.MaxTokens,
-            StopSequences = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.StopSequences                       
+            StopSequences = this._agent.AssistantModel.ExecutionSettings.PromptExecutionSettings.StopSequences
         };
     }
 
@@ -107,7 +106,7 @@ public class Thread : IThread
         else
         {
             assistantAnswer = new ChatMessageContent(AuthorRole.Assistant, await this.GetChatAnswer(userMessage).ConfigureAwait(false));
-        }        
+        }
 
         this._chatHistory.AddUserMessage(userMessage);
         this._chatHistory.Add(assistantAnswer);
@@ -207,7 +206,9 @@ public class Thread : IThread
         var goal = $"{this._agent.Instructions}\n" +
                             $"Given the following context, accomplish the user intent.\n" +
                             $"## User intent\n" +
-                            $"{userIntent}";
+                            $"{userIntent}\n" +
+                            $"## Current parameters\n" +
+                            $"{string.Join(Environment.NewLine, this._arguments.Select(c => $"{c.Key}:\n{c.Value}"))}";
 
         switch (this._agent.Planner.ToLower())
         {
@@ -235,8 +236,17 @@ public class Thread : IThread
                     LastError = lastError?.Message // Pass in the last error to avoid trying the same thing again
                 });
 
-                var plan = await planner.CreatePlanAsync(this._agent.Kernel, goal).ConfigureAwait(false);
-                lastPlan = plan;
+                HandlebarsPlan plan = null!;
+
+                if (!string.IsNullOrEmpty(this._agent.AssistantModel.ExecutionSettings.FixedPlan))
+                {
+                    plan = new HandlebarsPlan(this._agent.AssistantModel.ExecutionSettings.FixedPlan!);
+                }
+                else
+                {
+                    plan = await planner.CreatePlanAsync(this._agent.Kernel, goal).ConfigureAwait(false);
+                    lastPlan = plan;
+                }
 
                 this._logger.LogDebug($"Plan: {plan}");
 
@@ -272,5 +282,10 @@ public class Thread : IThread
         var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);
 
         return result.FinalAnswer!.Trim();
+    }
+
+    void IThread.UpdateKernelArguments(KernelArguments arguments)
+    {
+        this._arguments = arguments.ToDictionary(); ;
     }
 }

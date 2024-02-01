@@ -9,6 +9,7 @@ using SemanticKernel.Assistants.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using YamlDotNet.Serialization;
 
 namespace SemanticKernel.Assistants;
@@ -18,11 +19,6 @@ namespace SemanticKernel.Assistants;
 /// </summary>
 public partial class AssistantBuilder
 {
-    /// <summary>
-    /// The agent's assistants.
-    /// </summary>
-    private readonly List<IAssistant> _assistants;
-
     /// <summary>
     /// The kernel builder.
     /// </summary>
@@ -39,7 +35,6 @@ public partial class AssistantBuilder
     public AssistantBuilder()
     {
         this.Model = new AssistantModel();
-        this._assistants = new List<IAssistant>();
     }
 
     /// <summary>
@@ -55,11 +50,6 @@ public partial class AssistantBuilder
         }
 
         var agent = new Assistant(this.Model, this.Kernel);
-
-        foreach (var item in this._assistants)
-        {
-            this.Kernel.ImportPluginFromAgent(agent, item);
-        }
 
         return agent;
     }
@@ -98,18 +88,6 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
-    /// Adds the agent's collaborative assistant.
-    /// </summary>
-    /// <param name="assistant">The assistant.</param>
-    /// <returns></returns>
-    public AssistantBuilder WithAssistant(IAssistant assistant)
-    {
-        this._assistants.Add(assistant);
-
-        return this;
-    }
-
-    /// <summary>
     /// Defines the agent's planner.
     /// </summary>
     /// <param name="plannerName">The agent's planner name.</param>
@@ -133,17 +111,14 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
-    /// Defines the agent's input parameter.
+    /// Configures the input parameters for the assistant.
     /// </summary>
-    /// <param name="inputParameter">The input parameter.</param>
+    /// <param name="parameters">The input parameters.</param>
     /// <returns></returns>
-    public AssistantBuilder WithInputParameter(string description, string defaultValue = "")
+    public AssistantBuilder WithInputParameters(params AssistantInputParameter[] parameters)
     {
-        this.Model.Input = new AssistantInputParameter
-        {
-            DefaultValue = defaultValue,
-            Description = description,
-        };
+        this.Model.Inputs = parameters;
+
         return this;
     }
 
@@ -162,11 +137,9 @@ public partial class AssistantBuilder
     /// Creates a new agent builder from a yaml template.
     /// </summary>
     /// <param name="definitionPath">The yaml definition file path.</param>
-    /// <param name="assistants">The assistants.</param>
     /// <returns></returns>
     public static AssistantBuilder FromTemplate(
-        string definitionPath,
-        params IAssistant[] assistants)
+        string definitionPath)
     {
         var deserializer = new DeserializerBuilder().Build();
         var yamlContent = File.ReadAllText(definitionPath);
@@ -175,14 +148,6 @@ public partial class AssistantBuilder
 
         var agentBuilder = new AssistantBuilder();
         agentBuilder.Model = agentModel;
-
-        if (assistants is not null)
-        {
-            foreach (var assistant in assistants)
-            {
-                agentBuilder.WithAssistant(assistant);
-            }
-        }
 
         return agentBuilder;
     }

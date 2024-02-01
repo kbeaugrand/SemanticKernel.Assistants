@@ -65,5 +65,5 @@ public interface IAssistant
     /// <summary>
     /// Create a new conversable thread using actual kernel arguments.
     /// </summary>
-    internal IThread CreateThread(IAssistant initatedAgent, Dictionary<string, object?> arguments);
+    internal IThread CreateThread(Dictionary<string, object?> arguments);
 }
