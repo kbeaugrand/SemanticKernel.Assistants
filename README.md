@@ -41,7 +41,7 @@ proprietary data.
 
 ## Installation
 
-To install this memory store, you need to add the required nuget package to your project:
+To install the assistant Framework, you need to add the required nuget package to your project:
 
 ```dotnetcli
 dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
