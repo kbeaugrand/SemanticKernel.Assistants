@@ -14,6 +14,8 @@ It provides different scenarios for the usage of assistants such as:
 - **Assistant with Semantic Kernel plugins**
 - **Multi-Assistant conversation**
 
+As the assistants are using the Semantic Kernel, you can use your own model for the assistants and host them locally (see: [Bring you own model](#bring-you-own-model-) for more details.).
+
 ## About Semantic Kernel
 
 **Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
