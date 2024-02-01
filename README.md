@@ -90,6 +90,27 @@ dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
    await thread.InvokeAsync("Your ask to the assistant.");
    ```
 
+## Bring you own model ?
+
+As the assistants are using the Semantic Kernel, you can use your own model for the assistants.
+For example, you can use the Ollama model for the assistants.
+
+This could be achieved by using the [Ollama connector for the Semantic Kernel](https://github.com/BLaZeKiLL/Codeblaze.SemanticKernel): 
+
+```csharp
+using Codeblaze.SemanticKernel.Connectors.Ollama;
+
+string ollamaEndpoint = configuration["OllamaEndpoint"]!;
+
+var butlerKernel = Kernel.CreateBuilder()
+                    .AddOllamaChatCompletion("phi:latest", ollamaEndpoint)
+                    .Build();
+
+assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
+        .WithKernel(butlerKernel)
+        .Build();
+```
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

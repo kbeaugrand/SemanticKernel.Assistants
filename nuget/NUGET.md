@@ -9,6 +9,8 @@ It provides different scenarios for the usage of assistants such as:
 - **Assistant with Semantic Kernel plugins**
 - **Multi-Assistant conversation**
 
+As the assistants are using the Semantic Kernel, you can use your own model for the assistants and host them locally.
+
 ## Usage
 
 1. Create you agent description file in yaml: 
@@ -27,53 +29,50 @@ It provides different scenarios for the usage of assistants such as:
           Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.
     execution_settings:
       planner: Handlebars
-      model: gpt-3.5-turbo
-      service_id: gpt-35-turbo-1106
       prompt_settings: 
         temperature: 0.0
         top_p: 1
-        max_tokens: 100
+        max_tokens: 2000
     ```
 2. Instanciate your assistant in your code: 
    ```csharp
+    string azureOpenAIChatCompletionDeployment = configuration["AzureOpenAIDeploymentName"]!;
     string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
+ 
+    var mathKernel = Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build();
 
-    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-        plugins: new List<IKernelPlugin>()
-        {
-           KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        })
-        .WithAzureOpenAIChatCompletion(azureOpenAIEndpoint, azureOpenAIKey)
-        .Build();
+    mathKernel.ImportPluginFromObject(new MathPlugin());
+
+    var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml")
+                                        .WithKernel(mathKernel)
+                                        .Build();
    ```
    ```csharp
    var thread = mathematician.CreateThread();
    await thread.InvokeAsync("Your ask to the assistant.");
    ```
 
-## Ollama Suport
+## Bring you own model ?
 
-This assistant supports the [Ollama](https://ollama.ai/) platform, giving you the ability to use the assistant by hosting easyly your LLM models locally.
+As the assistants are using the Semantic Kernel, you can use your own model for the assistants.
+For example, you can use the Ollama model for the assistants.
 
-To use Ollama, install the Ollama extension package: 
-
-```dotnetcli
-dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
-
-```
-
-Then, instanciate your assistant with the Ollama extension: 
+This could be achieved by using the [Ollama connector for the Semantic Kernel](https://github.com/BLaZeKiLL/Codeblaze.SemanticKernel): 
 
 ```csharp
-var mathematician = AssistantBuilder.FromTemplate("./Assistants/Mathematician.yaml",
-        plugins: new List<IKernelPlugin>()
-        {
-           KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
-        })
-        .WithOllamaChatCompletion(ollamaEndpoint, client => { 
-            client.Timeout = TimeSpan.FromMinutes(5);
-        })
+using Codeblaze.SemanticKernel.Connectors.Ollama;
+
+string ollamaEndpoint = configuration["OllamaEndpoint"]!;
+
+var butlerKernel = Kernel.CreateBuilder()
+                    .AddOllamaChatCompletion("phi:latest", ollamaEndpoint)
+                    .Build();
+
+assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
+        .WithKernel(butlerKernel)
         .Build();
 ```
 
