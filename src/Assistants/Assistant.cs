@@ -103,11 +103,10 @@ public sealed class Assistant : IAssistant
     /// <summary>
     /// Create a new conversable thread using actual kernel arguments.
     /// </summary>
-    /// <param name="initatedAgent">The agent that is creating a thread with this agent.</param>
     /// <param name="arguments">The actual kernel parameters.</param>
     /// <returns></returns>
-    IThread IAssistant.CreateThread(IAssistant initatedAgent, Dictionary<string, object?> arguments)
+    IThread IAssistant.CreateThread(Dictionary<string, object?> arguments)
     {
-        return new Thread(this, initatedAgent.Name!, arguments);
+        return new Thread(this, arguments);
     }
 }

@@ -1,0 +1,56 @@
+﻿name: CodeInterpreter
+description: |
+    This AI agent is designed to execute python code reliably and efficiently. 
+    It has a built-in python interpreter that allows it to read, analyze and execute any valid python script.
+    This agent does not store instructions between calls, so you need to provide a complete code file to execute.
+instructions: 
+input_parameters: 
+     - name: input
+       is_required: True
+       default_value: ""
+       description: |
+          The python code to execute. 
+          Make sure you follow the correct Python code syntax before submitting it.
+          
+          If you expect me to send you a result, you should use ``print`` method to output your expectactions.
+
+          ## Example
+          ```
+          x = 1
+          y = 2.8
+          z = 1j
+
+          print(type(x))
+          print(type(y))
+          print(type(z))
+          ```
+
+          This code should be sended like this: 
+          ```
+          x = 1\r\ny = 2.8\r\nz = 1j\r\n\r\nprint(type(x))\r\nprint(type(y))\r\nprint(type(z))
+          ```
+
+          Important: You should alway send a full code to execute.
+     - name: requirements
+       is_required: False
+       default_value: ""
+       description: |
+          The contents of the Python requirements file to be used.
+          These requirements will be added to the ``requirements.txt`` file in the sandbox by the CodeInterpreter. 
+          Here you must provide all the requirements necessary for the successful execution of your code.
+
+          ## Example
+          ```
+          tensorflow==2.3.1
+          uvicorn==0.12.2
+          fastapi==0.63.0
+          ```
+
+execution_settings:
+  planner: Handlebars
+  fixed_plan: |
+    {{json (code-ExecutePythonCode)}}  
+  prompt_settings: 
+    temperature: 0.0
+    top_p: 1
+    max_tokens: 1000

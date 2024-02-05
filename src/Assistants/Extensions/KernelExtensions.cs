@@ -2,6 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SemanticKernel.Assistants.Extensions;
@@ -9,40 +10,32 @@ namespace SemanticKernel.Assistants.Extensions;
 /// <summary>
 /// Extensions for <see cref="Kernel"/>.
 /// </summary>
-internal static class KernelExtensions
+public static class KernelExtensions
 {
     /// <summary>
     /// Imports the agent's plugin into the kernel.
     /// </summary>
     /// <param name="kernel">The Kernel instance.</param>
-    /// <param name="agent">The Agent to import.</param>
-    /// <param name="model">The <see cref="AgentAssistantModel"/> instance.</param>
-    public static void ImportPluginFromAgent(this Kernel kernel, IAssistant agent, IAssistant otherAssistant)
+    /// <param name="assistant">The <see cref="IAssistant"/> instance.</param>
+    public static void ImportPluginFromAssistant(this Kernel kernel, IAssistant assistant)
     {
-        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(otherAssistant.Name!, otherAssistant.Description!, functions: new[]
+        if (assistant is null)
+        {
+            throw new ArgumentNullException(nameof(assistant));
+        }
+
+        var agentConversationPlugin = KernelPluginFactory.CreateFromFunctions(assistant.Name!, assistant.Description!, functions: new[]
         {
             KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
             {
-                if (!agent.AssistantThreads.TryGetValue(otherAssistant, out var thread))
-                {
-                    thread = otherAssistant.CreateThread(agent, args.ToDictionary());
-                    agent.AssistantThreads.Add(otherAssistant, thread);
-                }
+                var thread = assistant.CreateThread( args.ToDictionary());
 
                 return await thread.InvokeAsync(input).ConfigureAwait(false);
             },
             functionName: "Ask",
-            description: otherAssistant.Description,
-            parameters: new[]
-            {
-                new KernelParameterMetadata("input")
-                {
-                    IsRequired = true,
-                    ParameterType = typeof(string),
-                    DefaultValue = otherAssistant.AssistantModel.Input.DefaultValue,
-                    Description = otherAssistant.AssistantModel.Input.Description
-                }
-            }, returnParameter: new()
+            description: assistant.Description,
+            parameters: assistant.AssistantModel.Inputs.Select(c => c.ToKernelParameterMetadata()),
+            returnParameter: new()
             {
                 ParameterType = typeof(string),
                 Description = "The response from the assistant."

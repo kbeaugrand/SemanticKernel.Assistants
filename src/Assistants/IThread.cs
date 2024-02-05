@@ -27,4 +27,10 @@ public interface IThread
     /// Gets the chat messages.
     /// </summary>
     IReadOnlyList<ChatMessageContent> ChatMessages { get; }
+
+    /// <summary>
+    /// Updates the kernel arguments.
+    /// </summary>
+    /// <param name="arguments">The new kernel arguments.</param>
+    internal void UpdateKernelArguments(KernelArguments arguments);
 }

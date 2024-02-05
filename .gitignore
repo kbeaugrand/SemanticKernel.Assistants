@@ -398,3 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 /src/Assistants.Tests/testsettings.development.json
 /samples/01-mathematician/appsettings.development.json
+/samples/02-autogen/appsettings.development.json

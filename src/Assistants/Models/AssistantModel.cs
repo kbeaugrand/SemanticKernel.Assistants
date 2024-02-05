@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants.Models;
+using System;
 using YamlDotNet.Serialization;
 
 namespace SemanticKernel.Assistants.Models;
@@ -19,6 +21,6 @@ internal class AssistantModel
     [YamlMember(Alias = "execution_settings")]
     public AssistantExecutionSettings ExecutionSettings { get; set; } = new();
 
-    [YamlMember(Alias = "input_parameter")]
-    public AssistantInputParameter Input { get; set; } = new();
+    [YamlMember(Alias = "input_parameters")]
+    public AssistantInputParameter[] Inputs { get; set; } = Array.Empty<AssistantInputParameter>();
 }

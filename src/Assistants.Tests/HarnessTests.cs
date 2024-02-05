@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
+using SemanticKernel.Assistants.Extensions;
 using SemanticKernel.Assistants.Tests.Plugins;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -103,18 +104,25 @@ public class HarnessTests
                                               "No need to show your work, just give the answer to the math problem.\n" +
                                               "Use calculation results.")
                             .WithKernel(mathKernel)
-                            .WithInputParameter("The word mathematics problem to solve in 2-3 sentences.\n" +
-                                                "Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.")
+                            .WithInputParameters(new Assistants.Models.AssistantInputParameter
+                            {
+                                Name = "input",
+                                Description = "The word mathematics problem to solve in 2-3 sentences.\n" +
+                                              "Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it."
+                            })
                             .Build();
+
+        var butlerKernel = Kernel.CreateBuilder()
+                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
+                                        .Build();
+
+        butlerKernel.ImportPluginFromAssistant(mathematician);
 
         var butler = new AssistantBuilder()
                     .WithName("alfred")
                     .WithDescription("An AI butler that helps humans.")
                     .WithInstructions("Act as a butler.\nNo need to explain further the internal process.\nBe concise when answering.")
-                    .WithKernel(Kernel.CreateBuilder()
-                                        .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                                        .Build())
-                    .WithAssistant(mathematician)
+                    .WithKernel(butlerKernel)
                     .Build();
 
         var thread = butler.CreateThread();
@@ -143,14 +151,15 @@ public class HarnessTests
             .WithKernel(financialKernel)
             .Build();
 
-        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml",
-                           assistants: new[] {
-                               mathematician,
-                               financial
-                           })
-            .WithKernel(Kernel.CreateBuilder()
+        var butlerKernel = Kernel.CreateBuilder()
                               .AddAzureOpenAIChatCompletion(azureOpenAIChatCompletionDeployment, azureOpenAIEndpoint, azureOpenAIKey)
-                              .Build())
+                              .Build();
+
+        butlerKernel.ImportPluginFromAssistant(mathematician);
+        butlerKernel.ImportPluginFromAssistant(financial);
+
+        var butler = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
+            .WithKernel(butlerKernel)
             .Build();
 
         var thread = butler.CreateThread();
