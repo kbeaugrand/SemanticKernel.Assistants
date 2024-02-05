@@ -134,6 +134,17 @@ public partial class AssistantBuilder
     }
 
     /// <summary>
+    /// Defines the agent's kernel by cloning a kernel, so you don't have to.
+    /// </summary>
+    /// <param name="kernelToClone">The kernel.</param>
+    /// <returns></returns>
+    public AssistantBuilder WithKernelToClone(Kernel kernelToClone)
+    {
+        this.Kernel = kernelToClone.Clone();
+        return this;
+    }
+
+    /// <summary>
     /// Creates a new agent builder from a yaml template.
     /// </summary>
     /// <param name="definitionPath">The yaml definition file path.</param>
