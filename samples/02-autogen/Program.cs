@@ -21,7 +21,7 @@ using var loggerFactory = LoggerFactory.Create(logging =>
         .AddConfiguration(configuration.GetSection("Logging"));
 });
 
-AnsiConsole.Write(new FigletText($"Auto-Gen").Color(Color.Green));
+AnsiConsole.Write(new FigletText($"DA Copilot").Color(Color.Green));
 AnsiConsole.WriteLine("");
 
 IAssistant assistant = null!;
@@ -30,15 +30,19 @@ AnsiConsole.Status().Start("Initializing...", ctx =>
 {
     string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
     string azureOpenAIGPT4DeploymentName = configuration["AzureOpenAIGPT4DeploymentName"]!;
-    string azureOpenAIGPT35Endpoint = configuration["AzureOpenAIGPT35Endpoint"]!;
+    string azureOpenAIGPT35DeploymentName = configuration["AzureOpenAIGPT35DeploymentName"]!;
     string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
     string ollamaEndpoint = configuration["OllamaEndpoint"]!;
+
+    var codeInterpretionOptions = new CodeInterpretionPluginOptions();
+    configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
 
     var butlerKernel = Kernel.CreateBuilder()
                     .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
                     .Build();
 
-    butlerKernel.ImportPluginFromAssistant(CreateCodeInterpreter(azureOpenAIGPT35Endpoint, azureOpenAIEndpoint, azureOpenAIKey));
+    butlerKernel.ImportPluginFromObject(new FileAccessPlugin(codeInterpretionOptions.OutputFilePath, loggerFactory), "file");
+    butlerKernel.ImportPluginFromAssistant(CreateCodeInterpreter(codeInterpretionOptions, azureOpenAIGPT35DeploymentName, azureOpenAIEndpoint, azureOpenAIKey));
 
     assistant = AssistantBuilder.FromTemplate("./Assistants/AssistantAgent.yaml")
         .WithKernel(butlerKernel)
@@ -53,8 +57,6 @@ while (true)
 {
     var prompt = AnsiConsole.Prompt(new TextPrompt<string>("User > ").PromptStyle("teal"));
 
-    AnsiConsole.MarkupLine($"[teal]User > {prompt}\n[/]");
-
     await AnsiConsole.Status().StartAsync("Creating...", async ctx =>
     {
         ctx.Spinner(Spinner.Known.Star);
@@ -63,18 +65,15 @@ while (true)
 
         var answer = await thread.InvokeAsync(prompt).ConfigureAwait(true);
 
-        AnsiConsole.MarkupLine($"[cyan]AutoGen > {answer.Content!}\n[/]");
+        AnsiConsole.MarkupLine($"AutoGen > [cyan]{answer.Content!}\n[/]");
     });
 }
 
-IAssistant CreateCodeInterpreter(string azureOpenAIDeploymentName, string azureOpenAIEndpoint, string azureOpenAIKey)
+IAssistant CreateCodeInterpreter(CodeInterpretionPluginOptions codeInterpretionOptions, string azureOpenAIDeploymentName, string azureOpenAIEndpoint, string azureOpenAIKey)
 {
     var kernel = Kernel.CreateBuilder()
                         .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
                         .Build();
-
-    var codeInterpretionOptions = new CodeInterpretionPluginOptions();
-    configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
 
     kernel.ImportPluginFromObject(new CodeInterpretionPlugin(codeInterpretionOptions, loggerFactory), "code");
 

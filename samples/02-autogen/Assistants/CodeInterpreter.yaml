@@ -3,6 +3,14 @@ description: |
     This AI agent is designed to execute python code reliably and efficiently. 
     It has a built-in python interpreter that allows it to read, analyze and execute any valid python script.
     This agent does not store instructions between calls, so you need to provide a complete code file to execute.
+
+     ##Important
+     1. You should alway send a full code to execute.
+     2. You should always specify your requirements otherwise the code will fail.
+     3. When you have to generate files as output, be sure to write it to ``/var/app/output/`` directory, this directory is bind to the current directory, so ommit this path when trying to access to it.
+     4. When you provide input files they are binded into ``/var/app/inputs`` directory, so in your code you should use this base path to access to it. 
+     5. Do not provide a relative path, always use full path.
+
 instructions: 
 input_parameters: 
      - name: input
@@ -11,6 +19,8 @@ input_parameters:
        description: |
           The python code to execute. 
           Make sure you follow the correct Python code syntax before submitting it.
+
+          Do not add requirement installations here; those requirements are supposed to be in ``requirements`` input parameters.
           
           If you expect me to send you a result, you should use ``print`` method to output your expectactions.
 
@@ -28,28 +38,40 @@ input_parameters:
           This code should be sended like this: 
           ```
           x = 1\r\ny = 2.8\r\nz = 1j\r\n\r\nprint(type(x))\r\nprint(type(y))\r\nprint(type(z))
-          ```
-
-          Important: You should alway send a full code to execute.
+          ```         
      - name: requirements
        is_required: False
        default_value: ""
        description: |
           The contents of the Python requirements file to be used.
           These requirements will be added to the ``requirements.txt`` file in the sandbox by the CodeInterpreter. 
-          Here you must provide all the requirements necessary for the successful execution of your code.
 
           ## Example
           ```
-          tensorflow==2.3.1
-          uvicorn==0.12.2
+          tensorflow
+          uvicorn
           fastapi==0.63.0
           ```
-
+     - name: bindings
+       is_required: False
+       default_value: ""
+       description: |
+          The list of input files to bind to the code.
+          These files will be linked to the `/var/app/inputs/`` directory in the sandbox. So, when they are linked, they should be used directly in ``/var/app/inputs/``, omitting their relative path.          
+          This list should be provided as a json document, and each item should be represented as a bind string.
+          
+          ## Example
+          ```json
+          [
+                "<Full_File_Path>:/var/app/inputs/<File name>:ro",
+                "/home/user/myFile.xls:/var/app/inputs/myFile.xls:rw"
+          ]
+          ```
 execution_settings:
   planner: Handlebars
-  fixed_plan: |
-    {{json (code-ExecutePythonCode)}}  
+  handlebar_settings: 
+      fixed_plan: |
+        {{json (code-ExecutePythonCode)}}  
   prompt_settings: 
     temperature: 0.0
     top_p: 1
