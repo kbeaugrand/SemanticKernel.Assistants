@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
-using _02_autogen.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
+using SemanticKernel.Assistants.AutoGen;
+using SemanticKernel.Assistants.AutoGen.Plugins;
 using SemanticKernel.Assistants.Extensions;
 using Spectre.Console;
 
@@ -21,7 +22,7 @@ using var loggerFactory = LoggerFactory.Create(logging =>
         .AddConfiguration(configuration.GetSection("Logging"));
 });
 
-AnsiConsole.Write(new FigletText($"DA Copilot").Color(Color.Green));
+AnsiConsole.Write(new FigletText($"AutoGen").Color(Color.Green));
 AnsiConsole.WriteLine("");
 
 IAssistant assistant = null!;
@@ -38,13 +39,13 @@ AnsiConsole.Status().Start("Initializing...", ctx =>
     configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
 
     var butlerKernel = Kernel.CreateBuilder()
-                    .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
-                    .Build();
+                            .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                            .Build();
 
     butlerKernel.ImportPluginFromObject(new FileAccessPlugin(codeInterpretionOptions.OutputFilePath, loggerFactory), "file");
     butlerKernel.ImportPluginFromAssistant(CreateCodeInterpreter(codeInterpretionOptions, azureOpenAIGPT35DeploymentName, azureOpenAIEndpoint, azureOpenAIKey));
 
-    assistant = AssistantBuilder.FromTemplate("./Assistants/AssistantAgent.yaml")
+    assistant = AssistantAgentBuilder.CreateBuilder()
         .WithKernel(butlerKernel)
         .Build();
 });
@@ -77,7 +78,7 @@ IAssistant CreateCodeInterpreter(CodeInterpretionPluginOptions codeInterpretionO
 
     kernel.ImportPluginFromObject(new CodeInterpretionPlugin(codeInterpretionOptions, loggerFactory), "code");
 
-    return AssistantBuilder.FromTemplate("./Assistants/CodeInterpreter.yaml")
-        .WithKernel(kernel)
-        .Build();
+    return CodeInterpreterBuilder.CreateBuilder()
+                                .WithKernel(kernel)
+                                .Build();
 }

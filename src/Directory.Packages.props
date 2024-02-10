@@ -5,6 +5,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />

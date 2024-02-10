@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "02-autogen", "samples\02-autogen\02-autogen.csproj", "{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernel.Assistants.AutoGen", "src\Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj", "{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,12 @@ Global
 		{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +84,7 @@ Global
 		{BBC6C36F-DC43-4FD3-9706-ECA4738F8F57} = {803BA424-8745-4689-9C1D-72CA4384E6AC}
 		{B69AC62F-2CB1-4BCD-AB94-2C558AD3DB29} = {324300B5-4DBA-4DF0-957C-75458CCF93CE}
 		{F5C5DEF1-3AB7-4DAF-A29D-A46483875287} = {803BA424-8745-4689-9C1D-72CA4384E6AC}
+		{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A} = {96B59E8F-BF38-4918-8312-63DA3363B20B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3252A8D5-644E-45F0-B096-AC8C2F0A15B4}
