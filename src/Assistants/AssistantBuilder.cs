@@ -152,8 +152,21 @@ public partial class AssistantBuilder
     public static AssistantBuilder FromTemplate(
         string definitionPath)
     {
+        return FromTemplateStream(File.OpenRead(definitionPath));        
+    }
+
+    /// <summary>
+    /// Creates a new agent builder from a yaml template stream.
+    /// </summary>
+    /// <param name="definitionStream">The yaml definition stream.</param>
+    /// <returns></returns>
+    public static AssistantBuilder FromTemplateStream(
+        Stream definitionStream)
+    {
         var deserializer = new DeserializerBuilder().Build();
-        var yamlContent = File.ReadAllText(definitionPath);
+
+        using var reader = new StreamReader(definitionStream);
+        var yamlContent = reader.ReadToEnd();
 
         var agentModel = deserializer.Deserialize<AssistantModel>(yamlContent);
 

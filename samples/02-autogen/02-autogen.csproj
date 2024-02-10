@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Assistants\SemanticKernel.Assistants.csproj" />
+    <ProjectReference Include="..\..\src\SemanticKernel.Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,12 +34,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assistants\AssistantAgent.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assistants\CodeInterpreter.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="vgsales.csv">
