@@ -6,6 +6,23 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+
+  <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel Autogen Assistants</Title>
+    <Description>
+      This enables the usage of AutoGen assistants for the Semantic Kernel.
+
+      It provides different scenarios for the usage of assistants such as:
+      - **Assistant with Semantic Kernel plugins**
+      - **Multi-Assistant conversation**
+      - **AutoGen conversation** (see [AutoGen](#autogen) for more details)
+
+    </Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Assistants\AssistantAgent.yaml" />
     <None Remove="Assistants\CodeInterpreter.yaml" />
