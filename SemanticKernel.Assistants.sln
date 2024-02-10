@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "02-autogen", "samples\02-autogen\02-autogen.csproj", "{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernel.Assistants.AutoGen", "src\SemanticKernel.Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj", "{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernel.Assistants.AutoGen", "src\Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj", "{B3BD3FAC-3CD7-4127-A09F-D1ABC640B32A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
