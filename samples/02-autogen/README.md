@@ -97,3 +97,7 @@ You can also ask the copilot to plot some charts:
 ```
 From the vgsales.csv file, plot a chart showing the distribution of sales by region.
 ```
+
+Once the code is fully executed, the assitant will open the default image viewer with the requested chat like this: 
+
+![./outputs/vgsales_distribution.png](./outputs/vgsales_distribution.png)
