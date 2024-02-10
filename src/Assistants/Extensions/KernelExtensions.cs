@@ -28,7 +28,7 @@ public static class KernelExtensions
         {
             KernelFunctionFactory.CreateFromMethod(async (string input, KernelArguments args) =>
             {
-                var thread = assistant.CreateThread( args.ToDictionary());
+                var thread = assistant.CreateThread(args.ToDictionary());
 
                 return await thread.InvokeAsync(input).ConfigureAwait(false);
             },

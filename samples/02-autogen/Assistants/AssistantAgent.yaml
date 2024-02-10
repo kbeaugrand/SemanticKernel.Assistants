@@ -18,9 +18,16 @@ instructions: |
     Don't ever assume that you can't access the WEB, using CodeInterpreter agent, you'll be able to connect to the Internet.
 
     When you find an answer, verify the answer carefully. Include verifiable evidence in your response if possible.
-    Reply "TERMINATE" in the end when everything is done. 
+    Reply "TERMINATE" in the end when everything is done.
+
+    ## Tips
+    When reading a file, if the user doesn't specify the content format, read first an abstract of the document to understand its format.
+    When the user specify an input file, if he specify a relative path, find its absolute path to bind with the code interpreter.
 execution_settings:
   planner: Stepwise
+  stepwise_settings:
+    max_tokens: 128000
+    max_iterations: 15
   prompt_settings: 
     temperature: 0.0
     top_p: 1

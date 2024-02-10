@@ -238,9 +238,9 @@ public class Thread : IThread
 
                 HandlebarsPlan plan = null!;
 
-                if (!string.IsNullOrEmpty(this._agent.AssistantModel.ExecutionSettings.FixedPlan))
+                if (!string.IsNullOrEmpty(this._agent.AssistantModel.ExecutionSettings.HandleBarsPlannerSettings.FixedPlan))
                 {
-                    plan = new HandlebarsPlan(this._agent.AssistantModel.ExecutionSettings.FixedPlan!);
+                    plan = new HandlebarsPlan(this._agent.AssistantModel.ExecutionSettings.HandleBarsPlannerSettings.FixedPlan!);
                 }
                 else
                 {
@@ -274,9 +274,11 @@ public class Thread : IThread
     {
         var config = new FunctionCallingStepwisePlannerConfig
         {
-            MaxIterations = 15,
-            MaxTokens = 4000,
+            MaxIterations = this._agent.AssistantModel.ExecutionSettings.SetpwisePlannerSettings.MaxIterations,
+            MaxTokens = this._agent.AssistantModel.ExecutionSettings.SetpwisePlannerSettings.MaxTokens,
+            ExecutionSettings = this._openAIPromptExecutionSettings
         };
+
         var planner = new FunctionCallingStepwisePlanner(config);
 
         var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);

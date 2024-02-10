@@ -5,7 +5,10 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Spectre.Console.Json.Syntax;
 using System.ComponentModel;
+using System.Text;
+using System.Text.Json;
 
 namespace _02_autogen.Plugins
 {
@@ -19,6 +22,7 @@ namespace _02_autogen.Plugins
 
         private const string CodeFilePath = "/var/app/code.py";
         private const string RequirementsFilePath = "/var/app/requirements.txt";
+        private const string OutputDirectoryPath = "/var/app/output";
 
         public CodeInterpretionPlugin(CodeInterpretionPluginOptions options, ILoggerFactory loggerFactory)
         {
@@ -44,6 +48,7 @@ namespace _02_autogen.Plugins
 
             var codeFilePath = Path.GetTempFileName();
             var requirementsFilePath = Path.GetTempFileName();
+            var outputDirectory = Path.GetTempFileName();
 
             try
             {
@@ -61,13 +66,19 @@ namespace _02_autogen.Plugins
                     File.WriteAllText(requirementsFilePath, requirements?.ToString());
                 }
 
-                instanceId = await this.StartNewSandbox(@requirementsFilePath, codeFilePath).ConfigureAwait(false);
+                var inputFiles = arguments.TryGetValue("bindings", out object? inputFilesValue) ? inputFilesValue!.ToString() : string.Empty;
+
+                instanceId = await this.StartNewSandbox(@requirementsFilePath, codeFilePath, outputDirectory, inputFiles!).ConfigureAwait(false);
 
                 this._logger.LogTrace($"Preparing Sandbox ({instanceId}:{Environment.NewLine}requirements.txt:{Environment.NewLine}{requirements}{Environment.NewLine}code.py:{Environment.NewLine}{pythonCode}");
 
                 await this.InstallRequirementsAsync(instanceId).ConfigureAwait(false);
 
-                return await this.ExecuteCodeAsync(instanceId).ConfigureAwait(false);
+                var result = await this.ExecuteCodeAsync(instanceId).ConfigureAwait(false);
+
+                this.PrepareOutputFiles(outputDirectory, arguments);
+
+                return result;
             }
             finally
             {
@@ -87,15 +98,49 @@ namespace _02_autogen.Plugins
                 {
                     File.Delete(requirementsFilePath);
                 }
+                if (Directory.Exists(outputDirectory))
+                {
+                    Directory.Delete(outputDirectory, true);
+                }
             }
         }
 
-        private async Task<string> StartNewSandbox(string requirementFilePath, string codeFilePath)
+        private async Task<string> StartNewSandbox(
+            string requirementFilePath,
+            string codeFilePath,
+            string outputDirectoryPath,
+            string inputFiles)
         {
             var config = new Config()
             {
                 Hostname = "localhost",
             };
+
+            if (File.Exists(outputDirectoryPath))
+            {
+                File.Delete(outputDirectoryPath);
+            }
+
+            if (!Directory.Exists(outputDirectoryPath))
+            {
+                Directory.CreateDirectory(outputDirectoryPath);
+            }
+
+            List<string>? inputBindings = new List<string>();
+
+            if (!string.IsNullOrEmpty(inputFiles))
+            {
+                using MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(inputFiles));
+                inputBindings = await JsonSerializer.DeserializeAsync<List<string>>(stream).ConfigureAwait(false);
+            }
+
+            inputBindings!.AddRange(new[]
+            {
+                $"{codeFilePath}:{CodeFilePath}:ro",
+                $"{requirementFilePath}:{RequirementsFilePath}:ro",
+                $"{outputDirectoryPath}:{OutputDirectoryPath}:rw"
+            });
+
 
             var containerCreateOptions = new CreateContainerParameters(config)
             {
@@ -105,15 +150,13 @@ namespace _02_autogen.Plugins
                 NetworkDisabled = false,
                 HostConfig = new HostConfig()
                 {
-                    Binds = new[]
-                    {
-                        $"{codeFilePath}:{CodeFilePath}",
-                        $"{requirementFilePath}:{RequirementsFilePath}"
-                    }
+                    Binds = inputBindings
                 }
             };
 
             this._logger.LogDebug("Creating container.");
+            this._logger.LogTrace(JsonSerializer.Serialize(containerCreateOptions));
+
             var response = await _dockerClient.Containers.CreateContainerAsync(containerCreateOptions).ConfigureAwait(false);
 
             this._logger.LogDebug($"Starting the container (id: {response.ID}).");
@@ -168,7 +211,35 @@ namespace _02_autogen.Plugins
             }
             catch (DockerImageNotFoundException)
             {
-                await _dockerClient.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = this._options.DockerImage }, new AuthConfig(), new Progress<JSONMessage>());
+                try
+                {
+                    await _dockerClient.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = this._options.DockerImage }, new AuthConfig(), new Progress<JSONMessage>());
+                }
+                catch (Exception e)
+                {
+                    this._logger.LogWarning(e, $"Failed to create email for {this._options.DockerImage}");
+                }
+            }
+        }
+
+        private void PrepareOutputFiles(string outputDirectory, KernelArguments arguments)
+        {
+            if (arguments == null)
+            {
+                return;
+            }
+
+            if (!Directory.Exists(this._options.OutputFilePath))
+            {
+                Directory.CreateDirectory(this._options.OutputFilePath);
+            }
+
+            foreach (var item in Directory.EnumerateFiles(outputDirectory))
+            {
+                var fileInfo = new FileInfo(item);
+                var outputFilePath = Path.Combine(this._options.OutputFilePath, fileInfo.Name);
+
+                File.Copy(item, outputFilePath, true);
             }
         }
     }

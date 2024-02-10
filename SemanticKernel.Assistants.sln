@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution files", "Solution files", "{324300B5-4DBA-4DF0-957C-75458CCF93CE}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		.github\dependabot.yml = .github\dependabot.yml
 		src\Directory.Build.props = src\Directory.Build.props
 		src\Directory.Build.targets = src\Directory.Build.targets
@@ -32,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\publish.yml = .github\workflows\publish.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "02-autogen", "samples\02-autogen\02-autogen.csproj", "{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "02-autogen", "samples\02-autogen\02-autogen.csproj", "{F5C5DEF1-3AB7-4DAF-A29D-A46483875287}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

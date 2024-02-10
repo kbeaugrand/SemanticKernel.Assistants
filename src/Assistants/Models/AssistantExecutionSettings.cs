@@ -9,8 +9,11 @@ internal class AssistantExecutionSettings
     [YamlMember(Alias = "planner")]
     public string? Planner { get; set; }
 
-    [YamlMember(Alias = "fixed_plan")]
-    public string? FixedPlan { get; set; }
+    [YamlMember(Alias = "handlebar_settings")]
+    public HandleBarPlannerSettings HandleBarsPlannerSettings { get; set; } = new();
+
+    [YamlMember(Alias = "stepwise_settings")]
+    public StepwisePlannerSettings SetpwisePlannerSettings { get; set; } = new();
 
     [YamlMember(Alias = "past_messages_included")]
     public int PastMessagesIncluded { get; set; } = 10;

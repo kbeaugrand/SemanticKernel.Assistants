@@ -11,5 +11,7 @@ namespace _02_autogen.Plugins
         public string DockerEndpoint { get; set; } = string.Empty;
 
         public string DockerImage { get; set; } = "python:3-alpine";
+
+        public string OutputFilePath { get; set; } = ".";
     }
 }
