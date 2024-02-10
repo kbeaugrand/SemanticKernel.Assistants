@@ -13,6 +13,7 @@ It runs locally planners and plugins for the assistants.
 It provides different scenarios for the usage of assistants such as:
 - **Assistant with Semantic Kernel plugins**
 - **Multi-Assistant conversation**
+- **AutoGen conversation** (see [AutoGen](#autogen) for more details)
 
 As the assistants are using the Semantic Kernel, you can use your own model for the assistants and host them locally (see: [Bring you own model](#bring-you-own-model-) for more details.).
 
@@ -44,7 +45,7 @@ proprietary data.
 To install the assistant Framework, you need to add the required nuget package to your project:
 
 ```dotnetcli
-dotnet add package SemanticKernel.Assistants --version 1.2.0-preview
+dotnet add package SemanticKernel.Assistants
 ```
 
 ## Usage
@@ -111,6 +112,63 @@ var butlerKernel = Kernel.CreateBuilder()
 assistant = AssistantBuilder.FromTemplate("./Assistants/Butler.yaml")
         .WithKernel(butlerKernel)
         .Build();
+```
+
+## AutoGen
+
+AutoGen is based on the approach proposed by [Microsoft's Auto-Gen](https://github.com/microsoft/autogen).
+
+It is realized through 2 assistants working together to code and execute the code needed to respond to user requests.
+
+- __AssistantAgent (NL 2 Code)__: this agent takes charge of the user's request and produces Python code to respond to the user's request.
+- __CodeInterpreter__: This agent takes as input the various parameters required to execute the Python code supplied by the AssistantAgent. 
+
+> Note: 
+> Through its native plugin, the CodeInterpreter interacts with Docker to start a container, install the necessary dependencies and execute the Python code in this container, then returns the result.
+
+```csharp
+string azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"]!;
+string azureOpenAIGPT4DeploymentName = configuration["AzureOpenAIGPT4DeploymentName"]!;
+string azureOpenAIGPT35DeploymentName = configuration["AzureOpenAIGPT35DeploymentName"]!;
+string azureOpenAIKey = configuration["AzureOpenAIAPIKey"]!;
+string ollamaEndpoint = configuration["OllamaEndpoint"]!;
+
+var codeInterpretionOptions = new CodeInterpretionPluginOptions();
+configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
+
+IAssistant CreateCodeInterpreter(CodeInterpretionPluginOptions codeInterpretionOptions, string azureOpenAIDeploymentName, string azureOpenAIEndpoint, string azureOpenAIKey)
+{
+    var kernel = Kernel.CreateBuilder()
+                        .AddAzureOpenAIChatCompletion(azureOpenAIDeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                        .Build();
+
+    kernel.ImportPluginFromObject(new CodeInterpretionPlugin(codeInterpretionOptions, loggerFactory), "code");
+
+    return CodeInterpreterBuilder.CreateBuilder()
+                                .WithKernel(kernel)
+                                .Build();
+}
+
+IAssistant CreateAssistantAgent()
+{
+    var codeInterpretionOptions = new CodeInterpretionPluginOptions();
+    configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
+
+    var butlerKernel = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+                            .Build();
+
+    butlerKernel.ImportPluginFromObject(new FileAccessPlugin(codeInterpretionOptions.OutputFilePath, loggerFactory), "file");
+    butlerKernel.ImportPluginFromAssistant(CreateCodeInterpreter(codeInterpretionOptions, azureOpenAIGPT35DeploymentName, azureOpenAIEndpoint, azureOpenAIKey));
+
+    assistant = AssistantAgentBuilder.CreateBuilder()
+        .WithKernel(butlerKernel)
+        .Build();
+}
+
+var thread = CreateAssistantAgent().CreateThread();
+
+var answer = await thread.InvokeAsync(prompt).ConfigureAwait(true);
 ```
 
 ## License
