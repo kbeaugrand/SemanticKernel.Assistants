@@ -10,7 +10,6 @@ description: |
      3. When you have to generate files as output, be sure to write it to ``/var/app/output/`` directory, this directory is bind to the current directory, so ommit this path when trying to access to it.
      4. When you provide input files they are binded into ``/var/app/inputs`` directory, so in your code you should use this base path to access to it. 
      5. Do not provide a relative path, always use full path.
-
 instructions: 
 input_parameters: 
      - name: input

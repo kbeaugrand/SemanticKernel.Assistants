@@ -126,6 +126,24 @@ public class Thread : IThread
     }
 
     /// <summary>
+    /// Adds the user message to the chat history.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    public void AddUserMessage(string message)
+    {
+        this._chatHistory.AddUserMessage(message);
+    }
+
+    /// <summary>
+    /// Adds the assistant message to the chat history.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    public void AddAssistantMessage(string message)
+    {
+        this._chatHistory.AddAssistantMessage(message);
+    }
+
+    /// <summary>
     /// Returns the answer from the planner based on the user intent.
     /// </summary>
     /// <param name="userMessage">The latest user message.</param>
@@ -272,7 +290,7 @@ public class Thread : IThread
 
     private async Task<string> ExecuteStepwisePlannerAsync(string goal)
     {
-        var config = new FunctionCallingStepwisePlannerConfig
+        var config = new FunctionCallingStepwisePlannerOptions
         {
             MaxIterations = this._agent.AssistantModel.ExecutionSettings.SetpwisePlannerSettings.MaxIterations,
             MaxTokens = this._agent.AssistantModel.ExecutionSettings.SetpwisePlannerSettings.MaxTokens,

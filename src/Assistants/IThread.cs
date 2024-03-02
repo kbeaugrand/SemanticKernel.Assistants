@@ -23,6 +23,19 @@ public interface IThread
     /// <param name="message">The message to add.</param>
     void AddSystemMessage(string message);
 
+
+    /// <summary>
+    /// Adds the user message to the chat history.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    void AddUserMessage(string message);
+
+    /// <summary>
+    /// Adds the assistant message to the chat history.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    void AddAssistantMessage(string message);
+
     /// <summary>
     /// Gets the chat messages.
     /// </summary>
