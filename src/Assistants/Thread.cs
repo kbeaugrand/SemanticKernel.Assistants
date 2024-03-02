@@ -209,8 +209,10 @@ public class Thread : IThread
     {
         var result = new ChatHistory();
 
+        result.AddSystemMessage(this._agent.Instructions);
+
         this._chatHistory.OrderByDescending(c => this._chatHistory.IndexOf(c))
-            .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant || c.Role == AuthorRole.System)
+            .Where(c => c.Role == AuthorRole.User || c.Role == AuthorRole.Assistant)
             .Take(this._agent.AssistantModel.ExecutionSettings.PastMessagesIncluded)
             .OrderBy(c => this._chatHistory.IndexOf(c))
             .ToList()
