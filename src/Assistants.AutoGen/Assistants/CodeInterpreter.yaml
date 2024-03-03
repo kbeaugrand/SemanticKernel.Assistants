@@ -4,9 +4,14 @@ description: |
     It has a built-in python interpreter that allows it to read, analyze and execute any valid python script.
     This agent does not store instructions between calls, so you need to provide a complete code file to execute.
 
-     ##Important
+     ## Usage
      - You should alway send a full code to execute.
-     - You should always specify your requirements otherwise the code will fail.     
+     - You should always specify your requirements otherwise the code will fail.
+     - When you have to generate files as output, be sure to write it to ``/var/app/output/`` directory, this directory is bind to the current directory, so ommit this path when trying to access to it.
+     - When you provide input files they are binded into ``/var/app/inputs`` directory, so in your code you should use this base path to access to it. 
+     - Do not provide a relative path, always use full path.
+     - When you need to search on Google using REST API, you can use ``GOOGLE_SEARCH_API_KEY`` and ``GOOGLE_SEARCH_ENGINE_ID`` environment variables.
+
 instructions: 
 input_parameters: 
      - name: input
@@ -35,13 +40,6 @@ input_parameters:
           ```
           x = 1\r\ny = 2.8\r\nz = 1j\r\n\r\nprint(type(x))\r\nprint(type(y))\r\nprint(type(z))
           ```
-          
-          ## Tips
-          - When you have to generate files as output, be sure to write it to ``/var/app/output/`` directory, this directory is bind to the current directory, so ommit this path when trying to access to it.
-          - When you provide input files they are binded into ``/var/app/inputs`` directory, so in your code you should use this base path to access to it. 
-          - Do not provide a relative path, always use full path.
-          - When you need to search on Google using REST API, you can use ``GOOGLE_SEARCH_API_KEY`` and ``GOOGLE_SEARCH_ENGINE_ID`` environment variables.
-
      - name: requirements
        is_required: False
        default_value: ""
