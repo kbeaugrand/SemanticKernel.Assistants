@@ -74,7 +74,7 @@ public class CodeInterpretionPlugin
 
             this.PrepareOutputFiles(outputDirectory, arguments);
 
-            return result;
+            return result!;
         }
         finally
         {
@@ -146,7 +146,11 @@ public class CodeInterpretionPlugin
             NetworkDisabled = false,
             HostConfig = new HostConfig()
             {
-                Binds = inputBindings
+                Binds = inputBindings               
+            },
+            Env = new[] { 
+                $"GOOGLE_SEARCH_API_KEY={this._options.GoogleSearchAPIKey}",
+                $"GOOGLE_SEARCH_ENGINE_ID={this._options.GoogleSearchEngineId}"
             }
         };
 
