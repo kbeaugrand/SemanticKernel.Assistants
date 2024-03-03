@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Assistants;
@@ -38,9 +39,14 @@ AnsiConsole.Status().Start("Initializing...", ctx =>
     var codeInterpretionOptions = new CodeInterpretionPluginOptions();
     configuration!.Bind("CodeInterpreter", codeInterpretionOptions);
 
-    var butlerKernel = Kernel.CreateBuilder()
-                            .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey)
+    var butlerKernelBuilder = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(azureOpenAIGPT4DeploymentName, azureOpenAIEndpoint, azureOpenAIKey);
+
+    butlerKernelBuilder.Services.AddSingleton(loggerFactory);
+
+    var butlerKernel = butlerKernelBuilder
                             .Build();
+
 
     butlerKernel.ImportPluginFromObject(new FileAccessPlugin(codeInterpretionOptions.OutputFilePath, loggerFactory), "file");
     butlerKernel.ImportPluginFromAssistant(CreateCodeInterpreter(codeInterpretionOptions, azureOpenAIGPT35DeploymentName, azureOpenAIEndpoint, azureOpenAIKey));
@@ -66,7 +72,7 @@ while (true)
 
         var answer = await thread.InvokeAsync(prompt).ConfigureAwait(true);
 
-        AnsiConsole.MarkupLine($"AutoGen > [cyan]{answer.Content!}\n[/]");
+        AnsiConsole.MarkupInterpolated($"AutoGen > [cyan]{answer.Content!}[/]");
     });
 }
 

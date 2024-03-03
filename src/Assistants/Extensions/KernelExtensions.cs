@@ -30,7 +30,9 @@ public static class KernelExtensions
             {
                 var thread = assistant.CreateThread(args.ToDictionary());
 
-                return await thread.InvokeAsync(input).ConfigureAwait(false);
+                var message =  await thread.InvokeAsync(input).ConfigureAwait(false);
+
+                return message.Content!;
             },
             functionName: "Ask",
             description: assistant.Description,
