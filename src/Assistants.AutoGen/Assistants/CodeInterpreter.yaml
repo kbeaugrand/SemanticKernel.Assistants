@@ -11,6 +11,7 @@ description: |
      - When you provide input files they are binded into ``/var/app/inputs`` directory, so in your code you should use this base path to access to it. 
      - Do not provide a relative path, always use full path.
      - When you need to search on Google using REST API, you can use ``GOOGLE_SEARCH_API_KEY`` and ``GOOGLE_SEARCH_ENGINE_ID`` environment variables.
+
 instructions: 
 input_parameters: 
      - name: input
