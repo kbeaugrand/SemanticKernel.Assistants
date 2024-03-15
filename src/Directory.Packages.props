@@ -19,7 +19,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.2" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.5.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.5.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.6.2" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.5.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.5.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.5.0-preview" />
