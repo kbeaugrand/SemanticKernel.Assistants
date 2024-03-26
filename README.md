@@ -59,11 +59,13 @@ dotnet add package SemanticKernel.Assistants
       Given a math problem, you must answer it with the best calculation formula.
       No need to show your work, just give the answer to the math problem.
       Use calculation results.
-    input_parameter: 
-      default_value: ""
-      description: |
-          The word mathematics problem to solve in 2-3 sentences.
-          Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.
+    input_parameters: 
+      - name: input
+        is_required: True
+        default_value: ""
+        description: |
+           The word financial problem to solve in 2-3 sentences.
+           Make sure to include all the input variables needed along with their values and units otherwise the math function will not be able to solve it.
     execution_settings:
       planner: Handlebars
       prompt_settings: 
