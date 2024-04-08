@@ -101,7 +101,7 @@ public class Thread : IThread
 
         if (!string.IsNullOrEmpty(this._agent.Planner))
         {
-            assistantAnswer = new ChatMessageContent(AuthorRole.Assistant, await this.GetPlannerAnswer(userMessage).ConfigureAwait(false));
+            assistantAnswer = await this.GetPlannerAnswer(userMessage).ConfigureAwait(false);
         }
         else
         {
@@ -148,7 +148,7 @@ public class Thread : IThread
     /// </summary>
     /// <param name="userMessage">The latest user message.</param>
     /// <returns></returns>
-    private async Task<string> GetPlannerAnswer(string userMessage)
+    private async Task<ChatMessageContent> GetPlannerAnswer(string userMessage)
     {
         var userIntent = await this.ExtractUserIntentAsync(userMessage)
                                     .ConfigureAwait(false);
@@ -221,7 +221,7 @@ public class Thread : IThread
         return result;
     }
 
-    private async Task<string> ExecutePlannerAsync(string userIntent)
+    private async Task<ChatMessageContent> ExecutePlannerAsync(string userIntent)
     {
         var goal = $"{this._agent.Instructions}\n" +
                             $"Given the following context, accomplish the user intent.\n" +
@@ -241,7 +241,7 @@ public class Thread : IThread
         }
     }
 
-    private async Task<string> ExecuteHandleBarsPlannerAsync(string goal, int maxTries = 3)
+    private async Task<ChatMessageContent> ExecuteHandleBarsPlannerAsync(string goal, int maxTries = 3)
     {
         HandlebarsPlan? lastPlan = null;
         Exception? lastError = null;
@@ -272,7 +272,7 @@ public class Thread : IThread
 
                 var result = await plan.InvokeAsync(this._agent.Kernel, new KernelArguments(this._arguments)).ConfigureAwait(false);
 
-                return result!.Trim();
+                return new ChatMessageContent(AuthorRole.Assistant, result!.Trim());
             }
             catch (Exception e)
             {
@@ -290,7 +290,7 @@ public class Thread : IThread
         throw lastError;
     }
 
-    private async Task<string> ExecuteStepwisePlannerAsync(string goal)
+    private async Task<ChatMessageContent> ExecuteStepwisePlannerAsync(string goal)
     {
         var config = new FunctionCallingStepwisePlannerOptions
         {
@@ -303,7 +303,12 @@ public class Thread : IThread
 
         var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);
 
-        return result.FinalAnswer!.Trim();
+        return new ChatMessageContent(AuthorRole.Assistant, result.FinalAnswer!.Trim(), metadata: new Dictionary<string, object?>()
+        {
+            { nameof(result.Iterations), result.Iterations },
+            { nameof(result.FinalAnswer), result.FinalAnswer },
+            { nameof(result.ChatHistory), result.ChatHistory }
+        });
     }
 
     void IThread.UpdateKernelArguments(KernelArguments arguments)
