@@ -27,7 +27,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj" />
     <ProjectReference Include="..\..\src\Assistants\SemanticKernel.Assistants.csproj" />
-    <ProjectReference Include="..\..\src\SemanticKernel.Assistants.AutoGen\SemanticKernel.Assistants.AutoGen.csproj" />
   </ItemGroup>
 
   <ItemGroup>
