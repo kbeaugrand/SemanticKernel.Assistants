@@ -21,7 +21,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.10.0-alpha" />
     <PackageVersion Include="System.Text.Json" Version="8.0.3" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.14.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.14.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.15.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.14.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.14.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.14.0-preview" />
