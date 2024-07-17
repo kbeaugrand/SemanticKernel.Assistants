@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.14.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.16.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.13.0" />
     <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.38" />
     <PackageReference Include="Spectre.Console.Json" Version="0.48.1-preview.0.38" />
