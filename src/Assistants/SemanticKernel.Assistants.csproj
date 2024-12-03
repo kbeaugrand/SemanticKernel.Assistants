@@ -35,6 +35,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Core" />
     <PackageReference Include="Microsoft.SemanticKernel.Planners.Handlebars" />
     <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Yaml" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
