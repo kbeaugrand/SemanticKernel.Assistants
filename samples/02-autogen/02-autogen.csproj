@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.31.0" />
     <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.38" />
     <PackageReference Include="Spectre.Console.Json" Version="0.48.1-preview.0.38" />
-    <PackageReference Include="YamlDotNet" Version="15.3.0" />
+    <PackageReference Include="YamlDotNet" Version="16.2.1" />
   </ItemGroup>
 
   <ItemGroup>
