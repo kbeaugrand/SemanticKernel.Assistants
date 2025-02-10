@@ -24,8 +24,8 @@
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.35.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.35.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.35.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.31.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.31.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.35.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.35.0-preview" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.9.3" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
