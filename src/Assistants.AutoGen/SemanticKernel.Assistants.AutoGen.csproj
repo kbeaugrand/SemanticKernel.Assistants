@@ -40,6 +40,7 @@
   <ItemGroup>
     <PackageReference Include="Docker.DotNet" />
     <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" />
   </ItemGroup>
 
   <ItemGroup>
