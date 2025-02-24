@@ -21,7 +21,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.38.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.38.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Yaml" Version="1.38.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.35.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.38.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.38.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.38.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.38.0-preview" />
